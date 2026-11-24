@@ -41,7 +41,6 @@ const demoServices: Service[] = [
   { _id: "demo18", title: "Tablet Battery Replacement", category: "Smartphone", description: "Tablet battery replaced with original.", price: 1600, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?auto=format&fit=crop&w=800&q=80", serviceMode: "Home Visit", status: "Approved" },
   { _id: "demo19", title: "Printer Repair", category: "Laptop & PC", description: "Paper jam, blurry print. Full service.", price: 900, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=800&q=80", serviceMode: "Home Visit", status: "Approved" },
   { _id: "demo20", title: "WiFi Router Setup", category: "Electrical", description: "Router setup, slow WiFi fix.", price: 1200, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1606904825846-647eb07f5be2?auto=format&fit=crop&w=800&q=80", serviceMode: "Home Visit", status: "Approved" },
-  // --- FIX: Missing categories added ---
   { _id: "demo21", title: "AC Gas Refill", category: "AC", description: "AC not cooling. Gas check, refill and full cooling test.", price: 2500, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1631545806609-24040d63f93a?auto=format&fit=crop&w=800&q=80", serviceMode: "Home Visit", status: "Approved" },
   { _id: "demo22", title: "AC Installation", category: "AC", description: "New AC installation with copper pipe, bracket and testing.", price: 3500, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=800&q=80", serviceMode: "Home Visit", status: "Approved" },
   { _id: "demo23", title: "AC Cooling Problem Repair", category: "AC", description: "AC runs but not cooling. Sensor, fan and gas checked.", price: 1800, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80", serviceMode: "Home Visit", status: "Approved" },
@@ -61,10 +60,8 @@ const demoServices: Service[] = [
 const cats = ["All", "Smartphone", "Laptop & PC", "AC", "Refrigerator", "TV", "Washing Machine", "Electrical"];
 const modes = ["All", "Home Visit", "Shop Drop-off"];
 
-// FIX: Client-side filter + sort - server filter na manleo kaj korbe
 function applyFilters(list: Service[], search: string, cat: string, mode: string, sort: string) {
   let out = [...list];
-  // Only Approved for public page - Pending / Rejected dekhabe na
   out = out.filter((s) => {
     if (!s.status) return true;
     return s.status.toLowerCase() === "approved";
@@ -121,6 +118,8 @@ function ServicesContent() {
           const fixed: Service[] = list.map((s: any, i: number) => {
             const found = demoServices.find((x) => x.title.toLowerCase() === (s.title || "").toLowerCase());
             const price = s.basePrice ?? s.price ?? 1000;
+            const rawTech = s.technicianName || s.technician || "Verified Technician";
+            const tech = rawTech.toLowerCase().includes("test") ? "Verified Technician" : rawTech;
             return {
               _id: s._id || "api" + i,
               title: s.title || s.name || "Repair Service",
@@ -130,18 +129,21 @@ function ServicesContent() {
               basePrice: price,
               duration: s.estimatedDuration || s.duration || "2 hours",
               estimatedDuration: s.estimatedDuration || s.duration || "2 hours",
-              technician: s.technicianName || s.technician || "Verified Technician",
-              technicianName: s.technicianName || s.technician || "Verified Technician",
+              technician: tech,
+              technicianName: tech,
               image: s.image || s.imageUrl || found?.image || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
               serviceMode: s.serviceMode || "Home Visit",
               serviceArea: s.serviceArea || "Dhaka",
               status: s.status || "Approved",
             };
           });
-          // FIX: API list keo abar client e filter koro
-          setServices(applyFilters(fixed, search, cat, mode, sort));
+          // FIX - MERGE: Real + Demo eksathe, na hole 1 ta real asle demo lukay jay
+          const merged = [
+            ...fixed,
+            ...demoServices.filter((demo) => !fixed.some((f) => f.title.toLowerCase() === demo.title.toLowerCase())),
+          ];
+          setServices(applyFilters(merged, search, cat, mode, sort));
         } else {
-          // FIX: Fallback eo filter apply koro - age sob dekhaito
           setServices(applyFilters(demoServices, search, cat, mode, sort));
         }
       } catch {
