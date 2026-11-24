@@ -7,16 +7,38 @@ type Service = {
   title: string;
   category: string;
   description: string;
-  price?: number;
-  basePrice?: number;
-  duration?: string;
-  technician?: string;
+  price: number;
+  duration: string;
+  technician: string;
 };
+
+const demoServices: Service[] = [
+  { _id: "demo1", title: "Laptop Screen Replacement", category: "Laptop", description: "Cracked or flickering laptop screen replaced with original display.", price: 2500, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo2", title: "Laptop Battery Replacement", category: "Laptop", description: "Battery drains fast. Replaced with original battery. 90 days warranty.", price: 1800, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo3", title: "Laptop Keyboard Repair", category: "Laptop", description: "Keys not working. Keyboard cleaned or replaced.", price: 1200, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo4", title: "Laptop Motherboard Repair", category: "Laptop", description: "Laptop not turning on. Chip-level motherboard repair.", price: 3500, duration: "3 hours", technician: "Verified Technician" },
+  { _id: "demo5", title: "Laptop Charging Port Repair", category: "Laptop", description: "Not charging. Charging port fixed.", price: 900, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo6", title: "Laptop Software Setup", category: "Laptop", description: "Windows setup, virus removal, speed optimization.", price: 800, duration: "2 hours", technician: "Verified Technician" },
+  { _id: "demo7", title: "Mobile Screen Replacement", category: "Mobile", description: "Broken mobile display replaced with original display.", price: 1800, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo8", title: "Mobile Battery Replacement", category: "Mobile", description: "Battery drains fast. Original battery replacement.", price: 1200, duration: "45 min", technician: "Verified Technician" },
+  { _id: "demo9", title: "Mobile Charging Port Repair", category: "Mobile", description: "Not charging. Port cleaned or replaced.", price: 700, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo10", title: "Mobile Camera Repair", category: "Mobile", description: "Blurry camera. Camera module replaced.", price: 1500, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo11", title: "Mobile Software Unlock", category: "Mobile", description: "Forgot password, hanging. Flash and unlock done.", price: 600, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo12", title: "Mobile Water Damage Repair", category: "Mobile", description: "Water damaged phone. Cleaning and full checkup.", price: 2000, duration: "3 hours", technician: "Verified Technician" },
+  { _id: "demo13", title: "PC Motherboard Repair", category: "PC", description: "Desktop not turning on. Chip-level repair.", price: 3000, duration: "3 hours", technician: "Verified Technician" },
+  { _id: "demo14", title: "PC Power Supply Repair", category: "PC", description: "PC shuts down suddenly. PSU repaired.", price: 1500, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo15", title: "PC RAM Upgrade", category: "PC", description: "Slow PC. RAM upgrade plus SSD setup.", price: 1000, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo16", title: "PC Data Recovery", category: "PC", description: "Deleted files, photos recovered.", price: 2500, duration: "4 hours", technician: "Verified Technician" },
+  { _id: "demo17", title: "Tablet Screen Replacement", category: "Tablet", description: "Broken tablet screen replaced.", price: 2200, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo18", title: "Tablet Battery Replacement", category: "Tablet", description: "Tablet battery replaced with original.", price: 1600, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo19", title: "Printer Repair", category: "PC", description: "Paper jam, blurry print. Full service.", price: 900, duration: "1 hour", technician: "Verified Technician" },
+  { _id: "demo20", title: "WiFi Router Setup", category: "PC", description: "Router setup, slow WiFi fix.", price: 1200, duration: "1 hour", technician: "Verified Technician" },
+];
 
 const cats = ["All", "Laptop", "Mobile", "PC", "Tablet"];
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<Service[]>(demoServices);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("All");
@@ -28,27 +50,37 @@ export default function ServicesPage() {
       .then((r) => r.json())
       .then((d) => {
         const list = Array.isArray(d) ? d : d.data || [];
-        setServices(list);
+        if (list.length >= 5) {
+          const fixed = list.map((s: any, i: number) => ({
+            _id: s._id || "api" + i,
+            title: s.title || s.name || "Repair Service",
+            category: s.category || "Laptop",
+            description: s.description || "Professional repair service.",
+            price: s.price ?? s.basePrice ?? 1000,
+            duration: s.duration || "2 hours",
+            technician: s.technician || "Verified Technician",
+          }));
+          setServices(fixed);
+        } else {
+          setServices(demoServices);
+        }
       })
-      .catch(() => setServices([]))
+      .catch(() => setServices(demoServices))
       .finally(() => setLoading(false));
   }, []);
 
-  const getPrice = (s: Service) => s.price ?? s.basePrice ?? 0;
-
   const filtered = useMemo(() => {
     let list = services.filter((s) => {
-      const matchSearch = (s.title + " " + s.category + " " + s.description).toLowerCase().includes(search.toLowerCase());
+      const matchSearch = (s.title + " " + s.category).toLowerCase().includes(search.toLowerCase());
       const matchCat = cat === "All" || s.category.toLowerCase().includes(cat.toLowerCase()) || s.title.toLowerCase().includes(cat.toLowerCase());
-      const p = getPrice(s);
       let matchPrice = true;
-      if (price === "low") matchPrice = p < 500;
-      if (price === "mid") matchPrice = p >= 500 && p <= 1000;
-      if (price === "high") matchPrice = p > 1000;
+      if (price === "low") matchPrice = s.price < 500;
+      if (price === "mid") matchPrice = s.price >= 500 && s.price <= 1000;
+      if (price === "high") matchPrice = s.price > 1000;
       return matchSearch && matchCat && matchPrice;
     });
-    if (sort === "low") list = [...list].sort((a, b) => getPrice(a) - getPrice(b));
-    if (sort === "high") list = [...list].sort((a, b) => getPrice(b) - getPrice(a));
+    if (sort === "low") list = [...list].sort((a, b) => a.price - b.price);
+    if (sort === "high") list = [...list].sort((a, b) => b.price - a.price);
     if (sort === "name") list = [...list].sort((a, b) => a.title.localeCompare(b.title));
     return list;
   }, [services, search, cat, sort, price]);
@@ -83,9 +115,7 @@ export default function ServicesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col lg:flex-row lg:items-center gap-3">
           <div className="flex gap-2 overflow-x-auto pb-1 lg:pb-0">
             {cats.map((c) => (
-              <button key={c} onClick={() => setCat(c)} className={cat === c ? "px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-bold whitespace-nowrap" : "px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-bold whitespace-nowrap hover:bg-slate-200"}>
-                {c === "All" ? "All" : c}
-              </button>
+              <button key={c} onClick={() => setCat(c)} className={cat === c ? "px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-bold whitespace-nowrap" : "px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-bold whitespace-nowrap hover:bg-slate-200"}>{c}</button>
             ))}
           </div>
           <div className="flex gap-2 ml-auto">
@@ -107,20 +137,17 @@ export default function ServicesPage() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
         <div className="flex items-center justify-between mb-5">
-          <p className="text-sm text-slate-600"><b className="text-slate-900">{filtered.length}</b> services found {cat !== "All" ? " - " + cat : ""}</p>
+          <p className="text-sm text-slate-600"><b className="text-slate-900">{filtered.length}</b> services found</p>
           {(search || cat !== "All" || price !== "all") && <button onClick={clearAll} className="text-sm font-bold text-red-600">Clear Filters</button>}
         </div>
-
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-80 bg-slate-100 rounded-3xl animate-pulse"></div>)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-3xl border">
-            <p className="text-5xl">Search</p>
-            <h3 className="font-bold text-xl mt-4">No service found</h3>
-            <p className="text-slate-500 text-sm mt-1">Try another keyword or clear filters. Or seed services from Admin.</p>
-            <Link href="/dashboard/admin" className="inline-block mt-5 px-6 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold">Go to Admin - Seed Services</Link>
+            <h3 className="font-bold text-xl">No service found</h3>
+            <button onClick={clearAll} className="mt-5 px-6 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold">Show All Services</button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -129,19 +156,19 @@ export default function ServicesPage() {
                 <div className="relative h-48 bg-gradient-to-br from-blue-50 to-violet-50 flex items-center justify-center text-6xl">
                   <span>Tools</span>
                   <span className="absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">{s.category}</span>
-                  <span className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">{getPrice(s) > 0 ? getPrice(s) + " Tk" : "Contact for Price"}</span>
+                  <span className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">{s.price} Tk</span>
                   <span className="absolute bottom-3 left-3 bg-white px-2.5 py-1 rounded-full text-xs font-bold">4.9 Rating - 120+ reviews</span>
                 </div>
                 <div className="p-5">
                   <h3 className="font-bold text-lg leading-snug">{s.title}</h3>
                   <p className="text-sm text-slate-500 mt-1 line-clamp-2 min-h-10">{s.description}</p>
                   <div className="flex items-center gap-2 mt-3 text-xs text-slate-500 flex-wrap">
-                    <span className="bg-slate-100 px-2 py-1 rounded-full">{s.duration || "2 hours"}</span>
-                    <span className="bg-slate-100 px-2 py-1 rounded-full">{s.technician || "Verified Tech"}</span>
+                    <span className="bg-slate-100 px-2 py-1 rounded-full">{s.duration}</span>
+                    <span className="bg-slate-100 px-2 py-1 rounded-full">{s.technician}</span>
                     <span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full font-bold">30 Days Warranty</span>
                   </div>
                   <div className="flex items-center justify-between mt-5 pt-4 border-t">
-                    <div><p className="text-xs text-slate-400">Price</p><p className="font-extrabold text-xl">{getPrice(s) > 0 ? getPrice(s) + " Tk" : "On Inspection"}</p></div>
+                    <div><p className="text-xs text-slate-400">Price</p><p className="font-extrabold text-xl">{s.price} Tk</p></div>
                     <div className="flex gap-2">
                       <Link href={"/services/" + s._id} className="px-4 py-2 rounded-full border font-bold text-sm">Details</Link>
                       <Link href={"/services/" + s._id} className="px-4 py-2 rounded-full bg-blue-600 text-white font-bold text-sm">Book Now</Link>
