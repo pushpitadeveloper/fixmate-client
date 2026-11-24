@@ -9,7 +9,7 @@ const links = [
   { label: "Services", href: "/services" },
   { label: "How It Works", href: "/#how-it-works" },
   { label: "Why FixMate", href: "/#why-us" },
-  { label: "Contact", href: "/#contact" },
+  { label: "Contact", href: "/about" },
 ];
 
 export default function Navbar() {
@@ -31,16 +31,18 @@ export default function Navbar() {
     await authClient.signOut();
     setUserMenu(false);
     setOpen(false);
-    router.push("/signin");
+    router.push("/sign-in");
     router.refresh();
   }
 
   function dashboardLink() {
-    if (!user) return "/signin";
+    if (!user) return "/sign-in";
     if (user.role === "admin") return "/dashboard/admin";
     if (user.role === "technician") return "/dashboard/technician";
     return "/dashboard/customer";
   }
+
+  const roleLabel = user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Customer";
 
   return (
     <header className="sticky top-0 z-50">
@@ -91,21 +93,22 @@ export default function Navbar() {
                     <span className="text-slate-500 text-xs">▼</span>
                   </button>
                   {userMenu && (
-                    <div className="absolute right-0 top-12 w-56 bg-white border rounded-2xl shadow-xl p-2">
-                      <p className="px-3 py-2 text-xs font-bold text-slate-500 border-b truncate">{user.email}</p>
+                    <div className="absolute right-0 top-12 w-60 bg-white border rounded-2xl shadow-xl p-2">
+                      <div className="px-3 py-2 border-b">
+                        <p className="text-sm font-bold text-slate-900 truncate">{user.name || "My Account"}</p>
+                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                        <span className="inline-block mt-1.5 text- font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{roleLabel}</span>
+                      </div>
                       <Link href={dashboardLink()} onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50">My Dashboard</Link>
-                      <Link href="/profile" onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50">My Profile</Link>
-                      {user.role !== "customer" && (
-                        <Link href="/dashboard/customer" onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">My Bookings</Link>
-                      )}
+                      <Link href="/dashboard/profile" onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50">Update Profile</Link>
                       <button onClick={handleLogout} className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50">Log Out</button>
                     </div>
                   )}
                 </div>
               ) : (
                 <>
-                  <Link href="/signin" className="hidden sm:inline-flex px-4 py-2.5 rounded-full border text-sm font-bold text-slate-800 hover:bg-slate-50">Sign In</Link>
-                  <Link href="/signup" className="px-4 md:px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 shadow-sm">Get Started</Link>
+                  <Link href="/sign-in" className="hidden sm:inline-flex px-4 py-2.5 rounded-full border text-sm font-bold text-slate-800 hover:bg-slate-50">Sign In</Link>
+                  <Link href="/sign-up" className="px-4 md:px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 shadow-sm">Get Started</Link>
                 </>
               )}
 
@@ -129,11 +132,11 @@ export default function Navbar() {
               {user ? (
                 <>
                   <Link href={dashboardLink()} onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 mt-2">My Dashboard</Link>
-                  <Link href="/profile" onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 mt-1">My Profile</Link>
+                  <Link href="/dashboard/profile" onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 mt-1">Update Profile</Link>
                   <button onClick={handleLogout} className="px-4 py-3 rounded-xl text-sm font-bold text-red-600 bg-red-50 text-left mt-1">Log Out</button>
                 </>
               ) : (
-                <Link href="/signin" onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 mt-2">Sign In</Link>
+                <Link href="/sign-in" onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 mt-2">Sign In</Link>
               )}
               <Link href="/services" onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 text-center mt-2">Book Repair Now</Link>
             </div>
