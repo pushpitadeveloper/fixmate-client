@@ -28,6 +28,13 @@ export default function SignInPage() {
     }
   }
 
+  async function handleGoogle() {
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
+  }
+
   const inputClass = "w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500";
 
   return (
@@ -64,6 +71,17 @@ export default function SignInPage() {
             {loading ? 'Loading...' : 'Sign In'}
           </button>
         </form>
+        <div className="flex items-center gap-2 my-4">
+          <div className="flex-1 h-px bg-gray-200"></div>
+          <span className="text-xs text-gray-500">OR</span>
+          <div className="flex-1 h-px bg-gray-200"></div>
+        </div>
+        <button
+          onClick={handleGoogle}
+          className="w-full border border-gray-300 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50"
+        >
+          Continue with Google
+        </button>
         <p className="text-center text-sm mt-4">
           Account nai?{' '}
           <Link href="/signup" className="text-blue-600">
