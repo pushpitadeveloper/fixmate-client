@@ -33,7 +33,9 @@ export default function SeedPage() {
   async function handleSeed() {
     setLoading(true);
     setStatus("Seeding started...");
+    setDone(0);
     let ok = 0;
+    let firstError = "";
     for (const s of seedList) {
       try {
         const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services", {
@@ -42,26 +44,50 @@ export default function SeedPage() {
           credentials: "include",
           body: JSON.stringify(s),
         });
+        const text = await res.text();
         if (res.ok) ok++;
+        else if (!firstError) firstError = "Status " + res.status + " - " + text.slice(0, 300);
         setDone(ok);
-      } catch {}
+      } catch (e: any) {
+        if (!firstError) firstError = e.message;
+      }
     }
     setLoading(false);
-    setStatus(ok + " services added successfully! Now check Services page.");
+    if (ok > 0) setStatus(ok + " services added successfully! Now check Services page.");
+    else setStatus("Failed! Error: " + firstError);
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-extrabold">Seed All Services</h1>
-      <p className="text-slate-500 mt-2 text-sm">This will add 20 services - Laptop, Mobile, PC, Tablet - in one click using the same API the website uses.</p>
-      <div className="bg-white border rounded-3xl p-6 mt-6">
-        <p className="font-bold">20 Services Ready</p>
-        <p className="text-sm text-slate-500 mt-1">Laptop 6 - Mobile 6 - PC 6 - Tablet 2</p>
-        <button onClick={handleSeed} disabled={loading} className="mt-5 px-6 py-3 rounded-full bg-blue-600 text-white font-bold text-sm disabled:opacity-50">
-          {loading ? "Adding... " + done + "/20" : "Seed 20 Services Now"}
+    <div className="max-w-4xl mx-auto px-4 py-10">
+      <p className="text-blue-600 text-xs font-bold tracking-widest">ADMIN - SEED DATA</p>
+      <h1 className="text-3xl md:text-4xl font-extrabold mt-2">Seed All Services</h1>
+      <p className="text-slate-500 mt-2 text-sm md:text-base">This will add 20 services - Laptop, Mobile, PC, Tablet - in one click using the same API the website uses.</p>
+
+      <div className="bg-white border rounded-3xl p-6 mt-6 shadow-sm">
+        <div className="flex flex-wrap gap-2">
+          <span className="px-3 py-1 bg-slate-100 rounded-full text-xs font-bold">Laptop - 6</span>
+          <span className="px-3 py-1 bg-slate-100 rounded-full text-xs font-bold">Mobile - 6</span>
+          <span className="px-3 py-1 bg-slate-100 rounded-full text-xs font-bold">PC - 6</span>
+          <span className="px-3 py-1 bg-slate-100 rounded-full text-xs font-bold">Tablet - 2</span>
+        </div>
+        <button onClick={handleSeed} disabled={loading} className="mt-5 px-6 py-3 rounded-full bg-blue-600 text-white font-bold text-sm disabled:opacity-50 hover:bg-blue-700">
+          {loading ? "Adding... " + done + " / 20" : "Seed 20 Services Now"}
         </button>
-        {status && <p className="mt-4 text-sm font-bold text-emerald-600">{status}</p>}
-        <Link href="/services" className="block mt-4 text-blue-600 font-bold text-sm">View Services Page →</Link>
+        {status && <p className="mt-4 text-sm font-bold text-slate-800 bg-slate-50 border rounded-xl p-3">{status}</p>}
+        <Link href="/services" className="block mt-4 text-blue-600 font-bold text-sm">View Services Page -&gt;</Link>
+        <Link href="/dashboard/admin" className="block mt-2 text-slate-500 font-bold text-sm">Back to Admin Dashboard</Link>
+      </div>
+
+      <div className="bg-white border rounded-3xl p-6 mt-5">
+        <h2 className="font-bold">Services that will be added:</h2>
+        <div className="mt-3 flex flex-col gap-2">
+          {seedList.map((s, i) => (
+            <div key={i} className="flex justify-between gap-3 text-sm border-b pb-2 last:border-0">
+              <span className="font-medium">{i + 1}. {s.title} <span className="text-slate-400">- {s.category}</span></span>
+              <span className="font-bold shrink-0">{s.price} Tk</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
