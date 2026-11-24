@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 export default function ProfilePage() {
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const user: any = (session as any)?.user;
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -25,11 +25,18 @@ export default function ProfilePage() {
       setName(user.name || "");
       setEmail(user.email || "");
       setImage(user.image || "");
-      const saved = JSON.parse(localStorage.getItem("fixmate-profile") || "{}");
-      setPhone(saved.phone || "");
-      setAddress(saved.address || "");
-      setCity(saved.city || "Dhaka");
-      setBio(saved.bio || "");
+      try {
+        const saved = JSON.parse(localStorage.getItem("fixmate-profile") || "{}");
+        setPhone(saved.phone || "");
+        setAddress(saved.address || "");
+        setCity(saved.city || "Dhaka");
+        setBio(saved.bio || "");
+      } catch {
+        setPhone("");
+        setAddress("");
+        setCity("Dhaka");
+        setBio("");
+      }
       setLoaded(true);
     }
   }, [user, loaded]);
@@ -37,6 +44,10 @@ export default function ProfilePage() {
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setMessage("Please select an image file.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setImage(reader.result as string);
     reader.readAsDataURL(file);
@@ -46,6 +57,11 @@ export default function ProfilePage() {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    if (!name.trim()) {
+      setMessage("Please enter your full name.");
+      setLoading(false);
+      return;
+    }
     try {
       // Save to BetterAuth - name + image
       await authClient.updateUser({ name, image: image || undefined } as any);
@@ -65,12 +81,16 @@ export default function ProfilePage() {
     return "/dashboard/customer";
   }
 
+  if (isPending) {
+    return <div className="max-w-3xl mx-auto px-4 py-20 text-center font-bold">Loading...</div>;
+  }
+
   if (!user) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
         <h1 className="text-3xl font-extrabold">Please Sign In</h1>
-        <p className="text-slate-500 mt-2 text-sm">You need to login to see your profile.</p>
-        <Link href="/signin" className="inline-block mt-6 px-6 py-3 rounded-full bg-blue-600 text-white text-sm font-bold">Go to Sign In</Link>
+        <p className="text-slate-500 mt-2 text-sm">You need to sign in to see your profile.</p>
+        <Link href="/sign-in" className="inline-block mt-6 px-6 py-3 rounded-full bg-blue-600 text-white text-sm font-bold">Go to Sign In</Link>
       </div>
     );
   }
@@ -95,30 +115,30 @@ export default function ProfilePage() {
             ) : (
               <div className="w-32 h-32 rounded-full bg-blue-600 text-white flex items-center justify-center text-5xl font-extrabold border-4 border-blue-100">{(name || email || "U").charAt(0).toUpperCase()}</div>
             )}
-            <button onClick={() => fileRef.current?.click()} className="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-slate-900 text-white text-sm font-bold shadow-md" title="Change Photo">+</button>
+            <button type="button" onClick={() => fileRef.current?.click()} className="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-slate-900 text-white text-sm font-bold shadow-md" title="Change Photo">+</button>
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
           <h2 className="font-extrabold text-xl mt-4">{name || "Your Name"}</h2>
           <p className="text-sm text-slate-500">{email}</p>
           <span className="inline-block mt-3 px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase">{user.role || "Customer"}</span>
           <div className="mt-5 space-y-2">
-            <button onClick={() => fileRef.current?.click()} className="w-full py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold">Upload New Photo</button>
-            <button onClick={() => setImage("")} className="w-full py-2.5 rounded-full border text-sm font-bold">Remove Photo</button>
+            <button type="button" onClick={() => fileRef.current?.click()} className="w-full py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold">Upload New Photo</button>
+            <button type="button" onClick={() => { setImage(""); setImageUrl(""); }} className="w-full py-2.5 rounded-full border text-sm font-bold">Remove Photo</button>
           </div>
           <div className="mt-5 pt-5 border-t text-left">
             <p className="text-xs font-bold text-slate-400 tracking-widest">OR PASTE IMAGE LINK</p>
             <div className="flex gap-2 mt-2">
               <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." className="flex-1 border rounded-full px-3 py-2 text-sm outline-none" />
-              <button onClick={() => imageUrl && setImage(imageUrl)} className="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-bold">Use</button>
+              <button type="button" onClick={() => imageUrl && setImage(imageUrl)} className="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-bold">Use</button>
             </div>
-            <p className="text-xs text-slate-400 mt-2">Jekono photo upload koro ba link bosau - sathe sathe preview dekhbe.</p>
+            <p className="text-xs text-slate-400 mt-2">Upload any photo or paste a link - you will see the preview instantly.</p>
           </div>
         </div>
 
         {/* Right - Form */}
         <form onSubmit={handleSave} className="lg:col-span-2 bg-white border rounded-3xl p-6 md:p-8">
           <h3 className="font-extrabold text-lg">Personal Information</h3>
-          <p className="text-sm text-slate-500 mt-1">Name ar photo change korle Navbar eo change hoye jabe.</p>
+          <p className="text-sm text-slate-500 mt-1">If you change your name or photo, it will also update in the navbar.</p>
           {message && <p className="mt-4 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl px-4 py-3 text-sm font-bold">{message}</p>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
@@ -129,7 +149,7 @@ export default function ProfilePage() {
             <div>
               <label className="text-sm font-bold">Email Address</label>
               <input value={email} disabled className="w-full mt-1.5 border rounded-xl px-4 py-3 text-sm outline-none bg-slate-50 text-slate-500" />
-              <p className="text-xs text-slate-400 mt-1">Email change kora jabe na - login er jonno fixed.</p>
+              <p className="text-xs text-slate-400 mt-1">Email cannot be changed - it is fixed for sign in.</p>
             </div>
             <div>
               <label className="text-sm font-bold">Phone Number</label>
