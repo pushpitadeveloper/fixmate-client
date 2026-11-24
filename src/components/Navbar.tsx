@@ -3,16 +3,23 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+
+const links = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Why FixMate", href: "/#why-us" },
+  { label: "Contact", href: "/#contact" },
+];
 
 export default function Navbar() {
-  const { data: session } = authClient.useSession();
-  const router = useRouter();
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const user = session?.user as any;
+  const { data: session } = authClient.useSession();
+  const user: any = (session as any)?.user;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -20,140 +27,116 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const links = [
-    { href: "/", label: "Home" },
-    { href: "/services", label: "Services" },
-    { href: "/services", label: "Laptop Repair" },
-    { href: "/services", label: "Mobile Repair" },
-  ];
-
   async function handleLogout() {
     await authClient.signOut();
-    toast.success("Logout hoye gese");
     setUserMenu(false);
     setOpen(false);
-    router.push("/");
+    router.push("/signin");
+    router.refresh();
   }
 
-  const isActive = (href: string, label: string) => {
-    if (label === "Home") return pathname === "/";
-    if (label === "Services") return pathname.startsWith("/services");
-    return false;
-  };
+  function dashboardLink() {
+    if (!user) return "/signin";
+    if (user.role === "admin") return "/dashboard/admin";
+    if (user.role === "technician") return "/dashboard/technician";
+    return "/dashboard/customer";
+  }
 
   return (
     <header className="sticky top-0 z-50">
-      {/* TOP BAR - Real website er moto */}
-      <div className="bg-[#0B1B3A] text-white hidden sm:block">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 h- flex items-center justify-between text-[12.5px]">
-          <p className="flex items-center gap-2">
-            <span className="bg-yellow-400 text-black px-2 py- rounded-full font-bold text-">20% OFF</span>
-            <span className="text-slate-200">Prothom booking e 20% discount - Code: FIX20</span>
-          </p>
-          <div className="flex items-center gap-5 text-slate-300">
-            <span>📞 +880 1700-000000</span>
-            <span className="hidden lg:inline">📍 Dhaka, Bangladesh</span>
-            <span className="text-emerald-400 font-semibold">● Open Now</span>
+      <div className="bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-between text-xs">
+          <p className="font-medium tracking-wide hidden sm:block">Free Home Pickup in Dhaka | 30 Days Service Warranty</p>
+          <p className="font-medium tracking-wide sm:hidden">Free Pickup in Dhaka</p>
+          <div className="flex items-center gap-4">
+            <a href="tel:01326548954" className="font-bold hover:text-blue-300">Hotline: 01326-548954</a>
+            <span className="hidden md:inline text-slate-400">Mon - Sun: 9 AM - 9 PM</span>
           </div>
         </div>
       </div>
 
-      {/* MAIN NAVBAR */}
-      <div className={`bg-white/95 backdrop-blur-md border-b transition-shadow ${scrolled ? "shadow-[0_8px_30px_rgba(0,0,0,0.08)]" : "shadow-sm"}`}>
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h- flex items-center justify-between gap-4">
-          {/* LOGO */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w- h- bg-gradient-to-br from-blue-600 to-violet-600 rounded- flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
-              <span className="text-">🔧</span>
-            </div>
-            <div className="leading-none">
-              <span className="block text- font-extrabold tracking-tight text-slate-900">Fix<span className="text-blue-600">Mate</span></span>
-              <span className="block text- tracking-[0.18em] text-slate-400 font-semibold mt-">REPAIR • AT HOME</span>
-            </div>
-          </Link>
+      <div className={scrolled ? "bg-white shadow-md border-b" : "bg-white border-b"}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            <Link href="/" className="flex items-center gap-2.5 shrink-0" onClick={() => setOpen(false)}>
+              <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-xl shadow-md">F</span>
+              <span className="leading-none">
+                <span className="block text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">Fix<span className="text-blue-600">Mate</span></span>
+                <span className="block text-xs font-bold tracking-widest text-slate-500 mt-0.5">REPAIR EXPERTS</span>
+              </span>
+            </Link>
 
-          {/* DESKTOP LINKS */}
-          <div className="hidden lg:flex items-center gap-1 bg-slate-100/80 p-1.5 rounded-full">
-            {links.slice(0, 2).map((l) => (
-              <Link
-                key={l.label}
-                href={l.href}
-                className={`px-5 py-2 rounded-full text- font-semibold transition ${isActive(l.href, l.label) ? "bg-white shadow text-blue-600" : "text-slate-600 hover:text-slate-900"}`}
-              >
-                {l.label}
-              </Link>
-            ))}
-            <Link href="/#how-it-works" className="px-5 py-2 rounded-full text- font-semibold text-slate-600 hover:text-slate-900">How it Works</Link>
-            <Link href="/#why-us" className="px-5 py-2 rounded-full text- font-semibold text-slate-600 hover:text-slate-900">Why Us</Link>
-          </div>
+            <nav className="hidden lg:flex items-center gap-1">
+              {links.map((l) => {
+                const active = pathname === l.href || (l.href === "/services" && pathname.startsWith("/services"));
+                return (
+                  <Link key={l.href} href={l.href} className={active ? "px-4 py-2 rounded-full text-sm font-bold text-blue-600 bg-blue-50" : "px-4 py-2 rounded-full text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-slate-50"}>
+                    {l.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
-          {/* RIGHT */}
-          <div className="hidden md:flex items-center gap-3">
-            {user ? (
-              <div className="relative">
-                <button onClick={() => setUserMenu(!userMenu)} className="flex items-center gap-2.5 bg-white border border-slate-200 pl-1.5 pr-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition">
-                  <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-violet-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    {user.name?.[0]?.toUpperCase() || "U"}
-                  </div>
-                  <div className="text-left leading-tight">
-                    <p className="text- font-bold text-slate-900 max-w- truncate">{user.name || "My Account"}</p>
-                    <p className="text- text-slate-400">View Profile ▾</p>
-                  </div>
-                </button>
-
-                {userMenu && (
-                  <div className="absolute right-0 top- w- bg-white rounded-2xl shadow-2xl border p-2 animate-fade-in">
-                    <div className="px-3 py-3 border-b">
-                      <p className="font-bold text-sm truncate">{user.name}</p>
-                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                    </div>
-                    <Link href="/dashboard/customer" onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium">📅 My Bookings</Link>
-                    <Link href="/dashboard/customer" onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium">👤 Dashboard</Link>
-                    <button onClick={handleLogout} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-red-50 text-sm font-medium text-red-600">🚪 Logout</button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <Link href="/signin" className="px-4 py-2.5 text- font-semibold text-slate-700 hover:text-blue-600">Sign In</Link>
-                <Link href="/signup" className="px-5 py-2.5 rounded-full bg-blue-600 text-white text- font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/25 hover:-translate-y- transition">Book Repair →</Link>
-              </>
-            )}
-          </div>
-
-          {/* MOBILE HAMBURGER */}
-          <button onClick={() => setOpen(!open)} className="lg:hidden w-11 h-11 rounded-full bg-slate-100 flex flex-col items-center justify-center gap-">
-            <span className={`w- h- bg-slate-900 rounded transition ${open ? "rotate-45 translate-y-" : ""}`}></span>
-            <span className={`w- h- bg-slate-900 rounded transition ${open ? "opacity-0" : ""}`}></span>
-            <span className={`w- h- bg-slate-900 rounded transition ${open ? "-rotate-45 -translate-y-" : ""}`}></span>
-          </button>
-        </nav>
-
-        {/* MOBILE MENU */}
-        {open && (
-          <div className="lg:hidden bg-white border-t px-4 py-4 animate-fade-in">
-            <Link href="/" onClick={() => setOpen(false)} className="block px-4 py-3.5 rounded-2xl bg-blue-50 text-blue-700 font-bold">🏠 Home</Link>
-            <Link href="/services" onClick={() => setOpen(false)} className="block px-4 py-3.5 rounded-2xl hover:bg-slate-50 font-semibold mt-1">🛠️ All Services</Link>
-            <Link href="/services" onClick={() => setOpen(false)} className="block px-4 py-3.5 rounded-2xl hover:bg-slate-50 font-semibold">💻 Laptop Repair</Link>
-            <Link href="/services" onClick={() => setOpen(false)} className="block px-4 py-3.5 rounded-2xl hover:bg-slate-50 font-semibold">📱 Mobile Repair</Link>
-            <div className="mt-4 pt-4 border-t">
+            <div className="flex items-center gap-2 md:gap-3">
+              <Link href="/services" className="hidden md:inline-flex px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-slate-800">Book Repair</Link>
               {user ? (
-                <>
-                  <div className="flex items-center gap-3 px-2 mb-3">
-                    <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">{user.name?.[0] || "U"}</div>
-                    <div><p className="font-bold text-sm">{user.name}</p><p className="text-xs text-slate-500">{user.email}</p></div>
-                  </div>
-                  <Link href="/dashboard/customer" onClick={() => setOpen(false)} className="block w-full text-center py-3.5 rounded-xl bg-slate-900 text-white font-bold">My Bookings</Link>
-                  <button onClick={handleLogout} className="w-full mt-2 py-3.5 rounded-xl bg-red-50 text-red-600 font-bold">Logout</button>
-                </>
+                <div className="relative">
+                  <button onClick={() => setUserMenu(!userMenu)} className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full border hover:shadow-md bg-white">
+                    {user.image ? (
+                      <img src={user.image} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <span className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">{(user.name || user.email || "U").charAt(0).toUpperCase()}</span>
+                    )}
+                    <span className="hidden sm:block text-sm font-bold text-slate-800 max-w-24 truncate">{user.name || "My Account"}</span>
+                    <span className="text-slate-500 text-xs">▼</span>
+                  </button>
+                  {userMenu && (
+                    <div className="absolute right-0 top-12 w-56 bg-white border rounded-2xl shadow-xl p-2">
+                      <p className="px-3 py-2 text-xs font-bold text-slate-500 border-b truncate">{user.email}</p>
+                      <Link href={dashboardLink()} onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50">My Dashboard</Link>
+                      <Link href="/profile" onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50">My Profile</Link>
+                      {user.role !== "customer" && (
+                        <Link href="/dashboard/customer" onClick={() => setUserMenu(false)} className="block px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">My Bookings</Link>
+                      )}
+                      <button onClick={handleLogout} className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50">Log Out</button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <>
-                  <Link href="/signin" onClick={() => setOpen(false)} className="block w-full text-center py-3.5 rounded-xl border-2 font-bold">Sign In</Link>
-                  <Link href="/signup" onClick={() => setOpen(false)} className="block w-full text-center py-3.5 rounded-xl bg-blue-600 text-white font-bold mt-2">Book Repair →</Link>
+                  <Link href="/signin" className="hidden sm:inline-flex px-4 py-2.5 rounded-full border text-sm font-bold text-slate-800 hover:bg-slate-50">Sign In</Link>
+                  <Link href="/signup" className="px-4 md:px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 shadow-sm">Get Started</Link>
                 </>
               )}
+
+              <button onClick={() => setOpen(!open)} className="lg:hidden w-10 h-10 rounded-full border flex flex-col items-center justify-center gap-1 bg-white" aria-label="Menu">
+                <span className="w-5 h-0.5 bg-slate-900 block"></span>
+                <span className="w-5 h-0.5 bg-slate-900 block"></span>
+                <span className="w-5 h-0.5 bg-slate-900 block"></span>
+              </button>
             </div>
-            <p className="text-center text-xs text-slate-400 mt-4">📞 +880 1700-000000 • Dhaka</p>
+          </div>
+        </div>
+
+        {open && (
+          <div className="lg:hidden border-t bg-white px-4 py-4">
+            <div className="flex flex-col gap-1">
+              {links.map((l) => (
+                <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className={pathname === l.href ? "px-4 py-3 rounded-xl text-sm font-bold text-blue-600 bg-blue-50" : "px-4 py-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50"}>
+                  {l.label}
+                </Link>
+              ))}
+              {user ? (
+                <>
+                  <Link href={dashboardLink()} onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 mt-2">My Dashboard</Link>
+                  <Link href="/profile" onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 mt-1">My Profile</Link>
+                  <button onClick={handleLogout} className="px-4 py-3 rounded-xl text-sm font-bold text-red-600 bg-red-50 text-left mt-1">Log Out</button>
+                </>
+              ) : (
+                <Link href="/signin" onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 mt-2">Sign In</Link>
+              )}
+              <Link href="/services" onClick={() => setOpen(false)} className="px-4 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 text-center mt-2">Book Repair Now</Link>
+            </div>
           </div>
         )}
       </div>
