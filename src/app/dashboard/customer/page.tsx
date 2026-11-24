@@ -8,6 +8,7 @@ type Booking = {
   serviceName?: string;
   title?: string;
   date?: string;
+  timeSlot?: string;
   status?: string;
   price?: number;
   amount?: number;
@@ -24,16 +25,27 @@ export default function CustomerDashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/bookings", {
-          credentials: "include",
+        let apiList: Booking[] = [];
+        try {
+          const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/bookings", { credentials: "include" });
+          const d = await res.json();
+          const list = Array.isArray(d) ? d : d.bookings || d.data || d.result || [];
+          apiList = Array.isArray(list) ? list : [];
+        } catch { apiList = []; }
+
+        // Local bookings - demo service er booking ekhane thake
+        const localList: Booking[] = JSON.parse(localStorage.getItem("fixmate-bookings") || "[]");
+        const merged = [...localList, ...apiList];
+        // Duplicate bad dao
+        const seen = new Set();
+        const unique = merged.filter((b) => {
+          if (seen.has(b._id)) return false;
+          seen.add(b._id);
+          return true;
         });
-        const d = await res.json();
-        // FIX: backend jai dik na keno - array baniye nibo
-        const list = Array.isArray(d) ? d : d.bookings || d.data || d.result || [];
-        setBookings(Array.isArray(list) ? list : []);
+        setBookings(unique);
       } catch (e: any) {
-        setError("Could not load bookings. Please refresh.");
-        setBookings([]);
+        setBookings(JSON.parse(localStorage.getItem("fixmate-bookings") || "[]"));
       } finally {
         setLoading(false);
       }
@@ -44,7 +56,7 @@ export default function CustomerDashboard() {
   const total = bookings.length;
   const pending = bookings.filter((b) => (b.status || "").toLowerCase().includes("pend")).length;
   const completed = bookings.filter((b) => (b.status || "").toLowerCase().includes("complet") || (b.status || "").toLowerCase().includes("done")).length;
-  const paid = bookings.filter((b) => (b.paymentStatus || "").toLowerCase().includes("paid")).length;
+  const paid = bookings.filter((b) => (b.paymentStatus || "").toLowerCase() === "paid").length;
 
   function statusColor(status: string) {
     const s = status.toLowerCase();
@@ -61,7 +73,7 @@ export default function CustomerDashboard() {
         <div>
           <p className="text-blue-600 text-xs font-bold tracking-widest">CUSTOMER DASHBOARD</p>
           <h1 className="text-3xl md:text-4xl font-extrabold mt-1">My Bookings</h1>
-          <p className="text-slate-500 text-sm mt-1">Track your repairs, pay and see status.</p>
+          <p className="text-slate-500 text-sm mt-1">Your booking is saved here. Pay from here.</p>
         </div>
         <Link href="/services" className="px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold">Book New Service</Link>
       </div>
@@ -77,26 +89,23 @@ export default function CustomerDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
           {[1, 2, 3].map((i) => <div key={i} className="h-44 bg-slate-100 rounded-3xl animate-pulse"></div>)}
         </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-3xl p-6 mt-6 text-center">
-          <p className="font-bold text-red-700">{error}</p>
-          <button onClick={() => window.location.reload()} className="mt-3 px-5 py-2 rounded-full bg-red-600 text-white text-sm font-bold">Refresh</button>
-        </div>
       ) : bookings.length === 0 ? (
         <div className="bg-white border rounded-3xl p-10 mt-6 text-center">
           <h3 className="font-bold text-xl">No bookings yet</h3>
-          <p className="text-slate-500 text-sm mt-1">You have not booked any service yet. Book your first repair now.</p>
+          <p className="text-slate-500 text-sm mt-1">You have not booked any service yet.</p>
           <Link href="/services" className="inline-block mt-5 px-6 py-3 rounded-full bg-blue-600 text-white text-sm font-bold">Browse Services</Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-          {(bookings || []).map((b) => (
+          {(bookings || []).map((b) => {
+            const isPaid = (b.paymentStatus || "").toLowerCase() === "paid";
+            return (
             <div key={b._id} className="border rounded-3xl p-5 bg-white shadow-sm hover:shadow-md transition">
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-bold leading-snug">{b.serviceTitle || b.serviceName || b.title || "Repair Service"}</h3>
                 <span className={"px-3 py-1 rounded-full text-xs font-bold shrink-0 " + statusColor(b.status || "Pending")}>{b.status || "Pending"}</span>
               </div>
-              <p className="text-sm text-slate-500 mt-2">Date: {b.date || "Not set"}</p>
+              <p className="text-sm text-slate-500 mt-2">Date: {b.date || "Not set"} {b.timeSlot ? " - " + b.timeSlot : ""}</p>
               {b.address && <p className="text-sm text-slate-500">Address: {b.address}</p>}
               <div className="flex items-center justify-between mt-4 pt-4 border-t">
                 <div>
@@ -104,10 +113,15 @@ export default function CustomerDashboard() {
                   <p className="font-extrabold text-lg">{b.price ?? b.amount ?? 0} Tk</p>
                   <p className="text-xs font-bold text-slate-500">Payment: {b.paymentStatus || "Unpaid"}</p>
                 </div>
-                <Link href={"/payment?bookingId=" + b._id} className="px-4 py-2 rounded-full bg-blue-600 text-white text-sm font-bold">Pay Now</Link>
+                {isPaid ? (
+                  <span className="px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">Paid</span>
+                ) : (
+                  <Link href={"/payment?bookingId=" + b._id} className="px-4 py-2 rounded-full bg-blue-600 text-white text-sm font-bold">Pay Now</Link>
+                )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
