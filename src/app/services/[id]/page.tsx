@@ -146,16 +146,18 @@ export default function ServiceDetailsPage() {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        router.push("/dashboard/customer");
+        const data = await res.json().catch(() => ({}));
+        const bookingId = data._id || data.booking?._id || data.data?._id || "local-" + Date.now();
+        router.push("/payment?bookingId=" + bookingId);
         return;
       }
       throw new Error("API failed");
     } catch {
+      const newId = "local-" + Date.now();
       const old = JSON.parse(localStorage.getItem("fixmate-bookings") || "[]");
-      old.push({ ...payload, _id: "local-" + Date.now() });
+      old.push({ ...payload, _id: newId });
       localStorage.setItem("fixmate-bookings", JSON.stringify(old));
-      setMsg("Booking saved! Our team will call you in 30 minutes.");
-      setTimeout(() => router.push("/dashboard/customer"), 1200);
+      router.push("/payment?bookingId=" + newId);
     } finally {
       setBookingLoading(false);
     }
