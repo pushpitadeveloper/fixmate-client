@@ -29,10 +29,17 @@ export default function SignInPage() {
   }
 
   async function handleGoogle() {
-    await authClient.signIn.social({
+    setLoading(true);
+    const { error } = await authClient.signIn.social({
       provider: "google",
       callbackURL: "/",
+      newUserCallbackURL: "/",
+      errorCallbackURL: "/signin",
     });
+    if (error) {
+      setLoading(false);
+      toast.error(error.message || "Google login hoy nai");
+    }
   }
 
   const inputClass = "w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500";
@@ -78,6 +85,7 @@ export default function SignInPage() {
         </div>
         <button
           onClick={handleGoogle}
+          disabled={loading}
           className="w-full border border-gray-300 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50"
         >
           Continue with Google
