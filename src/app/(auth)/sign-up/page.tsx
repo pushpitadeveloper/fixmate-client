@@ -17,31 +17,31 @@ export default function SignUpPage() {
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
     if (!name || !email || !password) {
-      toast.error("Sob field puron koro");
+      toast.error("Please fill all required fields");
       return;
     }
-    if (password.length < 8) {
-      toast.error("Password minimum 8 character hote hobe");
+    if (password.length < 6 || !/[A-Z]/.test(password) || !/[a-z]/.test(password)) {
+      toast.error("Password must be at least 6 characters with 1 uppercase and 1 lowercase letter");
       return;
     }
     setLoading(true);
     const { error } = await (authClient.signUp.email as any)({
       name, email, password, role, phone,
-      callbackURL: "/",
+      callbackURL: role === "technician" ? "/dashboard/technician" : "/dashboard/customer",
     });
     setLoading(false);
     if (error) {
-      toast.error(error.message || "Sign up hoy nai");
+      toast.error(error.message || "Sign up failed. Please try again.");
     } else {
-      toast.success("Account hoye gese!");
-      router.push("/");
+      toast.success("Account created successfully!");
+      router.push(role === "technician" ? "/dashboard/technician" : "/dashboard/customer");
     }
   }
 
   async function handleGoogle() {
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL: "/dashboard/customer",
     });
   }
 
@@ -81,6 +81,7 @@ export default function SignUpPage() {
               onChange={e => setPassword(e.target.value)}
               required
             />
+            <p className="text-xs text-gray-500 mt-1">Min 6 characters, 1 uppercase and 1 lowercase letter</p>
           </div>
           <div>
             <label className="text-sm block mb-1">Phone</label>
@@ -118,8 +119,8 @@ export default function SignUpPage() {
           Continue with Google
         </button>
         <p className="text-center text-sm mt-4">
-          Account ache?{' '}
-          <Link href="/signin" className="text-blue-600">
+          Already have an account?{' '}
+          <Link href="/sign-in" className="text-blue-600">
             Sign In
           </Link>
         </p>

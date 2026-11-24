@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Service = {
@@ -7,25 +8,34 @@ type Service = {
   title: string;
   category: string;
   description: string;
-  price: number;
+  price?: number;
+  basePrice?: number;
+  image?: string;
   duration?: string;
+  estimatedDuration?: string;
+  serviceMode?: string;
+  technicianName?: string;
 };
 
 const categories = [
-  { name: "Laptop Repair", icon: "💻", count: "120+ Services" },
-  { name: "Mobile Repair", icon: "📱", count: "150+ Services" },
-  { name: "PC Repair", icon: "🖥️", count: "80+ Services" },
-  { name: "Tablet Repair", icon: "📲", count: "60+ Services" },
+  { name: "Smartphone", icon: "📱", count: "150+ Services" },
+  { name: "Laptop & PC", icon: "💻", count: "120+ Services" },
+  { name: "AC", icon: "❄️", count: "90+ Services" },
+  { name: "Refrigerator", icon: "🧊", count: "70+ Services" },
+  { name: "TV", icon: "📺", count: "80+ Services" },
+  { name: "Washing Machine", icon: "🧺", count: "60+ Services" },
+  { name: "Electrical", icon: "⚡", count: "100+ Services" },
 ];
 
 const faqs = [
-  { q: "Basay ese repair korate koto somoy lage?", a: "Dhakar moddhe 30-60 min er moddhe technician pouche jay. Repair 1-2 ghontar moddhe sesh hoy." },
-  { q: "Payment kivabe korbo?", a: "Kaj dekhe tarpor payment - Cash, bKash, Nagad, Card sob cholbe. Age taka dite hoy na." },
-  { q: "Warranty ache?", a: "Ha, prottek repair e 30 din er service warranty paba. Parts e 90 din warranty." },
-  { q: "Technician ki verified?", a: "Ha, sob technician NID + skill test diye verified. Rating dekhe booking korte parba." },
+  { q: "How long does a home repair take?", a: "Our technician reaches you within 30-60 minutes inside Dhaka. Most repairs are completed within 1-2 hours." },
+  { q: "How do I pay?", a: "You pay only after the work is completed, by secure card payment. No advance payment is needed." },
+  { q: "Is there a warranty?", a: "Yes, every repair comes with a 30-day service warranty and a 90-day parts warranty." },
+  { q: "Are technicians verified?", a: "Yes, all technicians are verified with ID and skill tests. You can check ratings before booking." },
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -42,9 +52,11 @@ export default function HomePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = services.filter((s) =>
-    (s.title + s.category).toLowerCase().includes(search.toLowerCase())
-  );
+  function handleHeroSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (search.trim()) router.push("/services?search=" + encodeURIComponent(search.trim()));
+    else router.push("/services");
+  }
 
   return (
     <div>
@@ -53,15 +65,15 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 md:pt-16 md:pb-20 grid lg:grid-cols-2 gap-10 items-center">
           <div className="animate-fade-up">
             <span className="inline-flex bg-white border shadow-sm px-3 py-1 rounded-full text-xs font-bold text-blue-700">⭐ 4.9/5 - 10,000+ Happy Customers</span>
-            <h1 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">Device Nosto?<br /><span className="text-blue-600">FixMate Ache.</span></h1>
-            <p className="mt-4 text-slate-600 text-base md:text-lg leading-relaxed max-w-lg">Verified Technician basay ese repair korbe. Laptop, Mobile, PC - sob kichu. Age kaj, pore payment.</p>
-            <form onSubmit={(e) => e.preventDefault()} className="mt-6 flex bg-white rounded-full p-1.5 shadow-lg border max-w-lg">
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Ki repair korate chao? Laptop, Mobile..." className="flex-1 px-4 outline-none text-sm bg-transparent" />
-              <Link href="/services" className="px-6 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold">Search</Link>
+            <h1 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">Device Broken?<br /><span className="text-blue-600">FixMate Is Here.</span></h1>
+            <p className="mt-4 text-slate-600 text-base md:text-lg leading-relaxed max-w-lg">A verified technician will visit your home and repair it. Laptop, Mobile, PC, AC and more. Work first, pay after.</p>
+            <form onSubmit={handleHeroSearch} className="mt-6 flex bg-white rounded-full p-1.5 shadow-lg border max-w-lg">
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="What do you want to repair? Laptop, Mobile..." className="flex-1 px-4 outline-none text-sm bg-transparent" />
+              <button type="submit" className="px-6 py-2.5 rounded-full bg-blue-600 text-white text-sm font-bold">Search</button>
             </form>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/services" className="px-7 py-3 rounded-full bg-blue-600 text-white font-bold text-sm shadow-lg">Services Dekho</Link>
-              <Link href="/signup" className="px-7 py-3 rounded-full border-2 border-slate-200 bg-white font-bold text-sm">Free Booking Koro</Link>
+              <Link href="/services" className="px-7 py-3 rounded-full bg-blue-600 text-white font-bold text-sm shadow-lg">View Services</Link>
+              <Link href="/signup" className="px-7 py-3 rounded-full border-2 border-slate-200 bg-white font-bold text-sm">Book For Free</Link>
             </div>
             <div className="mt-8 flex gap-8">
               <div><p className="text-2xl font-extrabold">500+</p><p className="text-xs text-slate-500">Technicians</p></div>
@@ -82,10 +94,10 @@ export default function HomePage() {
 
       {/* CATEGORIES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h2 className="text-2xl md:text-3xl font-extrabold">Category Diye Khujo</h2>
+        <h2 className="text-2xl md:text-3xl font-extrabold">Browse By Category</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
           {categories.map((c) => (
-            <Link key={c.name} href="/services" className="bg-white border rounded-2xl p-5 hover:border-blue-300 hover:-translate-y-1 transition shadow-sm">
+            <Link key={c.name} href={"/services?category=" + encodeURIComponent(c.name)} className="bg-white border rounded-2xl p-5 hover:border-blue-300 hover:-translate-y-1 transition shadow-sm">
               <div className="text-3xl">{c.icon}</div>
               <p className="font-bold mt-3">{c.name}</p>
               <p className="text-xs text-slate-500 mt-1">{c.count}</p>
@@ -99,63 +111,75 @@ export default function HomePage() {
         <div className="flex items-end justify-between mb-6">
           <div>
             <p className="text-blue-600 font-bold text-sm">POPULAR SERVICES</p>
-            <h2 className="text-3xl md:text-4xl font-extrabold mt-1">Ki Repair Korate Chao?</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold mt-1">What Do You Want To Repair?</h2>
           </div>
-          <Link href="/services" className="hidden sm:block text-blue-600 font-bold">Sob Dekho →</Link>
+          <Link href="/services" className="hidden sm:block text-blue-600 font-bold">View All →</Link>
         </div>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-72 bg-slate-100 rounded-3xl animate-pulse"></div>)}
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-3xl border">Service pawa jay nai.</div>
+        ) : services.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-3xl border">No service found.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((s) => (
-              <div key={s._id} className="bg-white rounded-3xl overflow-hidden border hover:-translate-y-1 hover:shadow-xl transition">
-                <div className="relative h-48 bg-slate-100 flex items-center justify-center text-6xl">🔧<span className="absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-xs font-bold">{s.category}</span><span className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">{s.price} Tk</span></div>
-                <div className="p-5">
-                  <h3 className="font-bold text-lg">{s.title}</h3>
-                  <p className="text-sm text-slate-500 mt-1 line-clamp-2 min-h-10">{s.description}</p>
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-sm text-slate-500">⏱ {s.duration || "2 hours"} - ⭐ 4.9</span>
-                    <Link href={"/services/" + s._id} className="px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-bold">Details →</Link>
+            {services.map((s) => {
+              const price = s.basePrice ?? s.price ?? 0;
+              return (
+                <div key={s._id} className="bg-white rounded-3xl overflow-hidden border hover:-translate-y-1 hover:shadow-xl transition flex flex-col">
+                  <div className="relative h-48 bg-slate-100 flex items-center justify-center text-6xl overflow-hidden">
+                    {s.image ? <img src={s.image} alt={s.title} className="w-full h-full object-cover" /> : "🔧"}
+                    <span className="absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-xs font-bold">{s.category}</span>
+                    <span className="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">{price} Tk</span>
+                  </div>
+                  <div className="p-5 flex flex-col flex-1">
+                    <h3 className="font-bold text-lg">{s.title}</h3>
+                    <p className="text-sm text-slate-500 mt-1 line-clamp-2 min-h-10">{s.description}</p>
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t mt-auto">
+                      <span className="text-sm text-slate-500">⏱ {s.estimatedDuration || s.duration || "2 hours"} - ⭐ 4.9</span>
+                      <Link href={"/services/" + s._id} className="px-5 py-2 rounded-full bg-blue-600 text-white text-sm font-bold">Details →</Link>
+                    </div>
+                    {s.technicianName && <p className="text-xs text-slate-400 mt-2">By {s.technicianName} • {s.serviceMode || "Home Visit"}</p>}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="bg-slate-900 text-white py-12 md:py-16 mt-8">
+      <section id="how-it-works" className="bg-slate-900 text-white py-12 md:py-16 mt-8 scroll-mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-center">Kivabe Kaj Kore?</h2>
-          <p className="text-center text-slate-400 mt-2">Sudhu 3 ta step - kono jhamela nai</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-9">
-            <div className="bg-white bg-opacity-10 border border-white border-opacity-10 rounded-3xl p-6"><div className="text-4xl">📅</div><h3 className="font-bold text-xl mt-4">1. Booking Koro</h3><p className="text-slate-300 text-sm mt-2">Service choose kore date, address dao. 30 sec e booking sesh.</p></div>
-            <div className="bg-white bg-opacity-10 border border-white border-opacity-10 rounded-3xl p-6"><div className="text-4xl">🔧</div><h3 className="font-bold text-xl mt-4">2. Technician Asbe</h3><p className="text-slate-300 text-sm mt-2">Verified technician basay ese samne repair korbe. Parts original.</p></div>
-            <div className="bg-white bg-opacity-10 border border-white border-opacity-10 rounded-3xl p-6"><div className="text-4xl">💳</div><h3 className="font-bold text-xl mt-4">3. Pay After Service</h3><p className="text-slate-300 text-sm mt-2">Kaj dekhe tarpor payment koro. Cash / bKash / Card sob cholbe.</p></div>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center">How FixMate Works</h2>
+          <p className="text-center text-slate-400 mt-2">Only 4 steps - no hassle at all</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-9">
+            <div className="bg-white bg-opacity-10 border border-white border-opacity-10 rounded-3xl p-6"><div className="text-4xl">🔍</div><h3 className="font-bold text-xl mt-4">1. Find a Service</h3><p className="text-slate-300 text-sm mt-2">Browse verified services and compare price, rating and area.</p></div>
+            <div className="bg-white bg-opacity-10 border border-white border-opacity-10 rounded-3xl p-6"><div className="text-4xl">📅</div><h3 className="font-bold text-xl mt-4">2. Send a Request</h3><p className="text-slate-300 text-sm mt-2">Choose date, address and describe the problem. Booking takes 30 seconds.</p></div>
+            <div className="bg-white bg-opacity-10 border border-white border-opacity-10 rounded-3xl p-6"><div className="text-4xl">🔧</div><h3 className="font-bold text-xl mt-4">3. Technician Fixes It</h3><p className="text-slate-300 text-sm mt-2">Verified technician visits your home and repairs in front of you with original parts.</p></div>
+            <div className="bg-white bg-opacity-10 border border-white border-opacity-10 rounded-3xl p-6"><div className="text-4xl">💳</div><h3 className="font-bold text-xl mt-4">4. Pay After Service</h3><p className="text-slate-300 text-sm mt-2">Check the work first, then pay securely by card. No advance payment.</p></div>
           </div>
         </div>
       </section>
 
       {/* WHY CHOOSE US + TESTIMONIALS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 grid lg:grid-cols-2 gap-10">
+      <section id="why-us" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 grid lg:grid-cols-2 gap-10 scroll-mt-24">
         <div>
-          <h2 className="text-3xl font-extrabold">Keno FixMate?</h2>
+          <p className="text-blue-600 font-bold text-sm">WHY CHOOSE US</p>
+          <h2 className="text-3xl font-extrabold mt-1">Why FixMate?</h2>
           <div className="mt-6 flex flex-col gap-4">
-            <div className="flex gap-3 bg-white border rounded-2xl p-4"><span className="text-2xl">✓</span><div><p className="font-bold">Verified Technician</p><p className="text-sm text-slate-500">NID + Skill Test diye verified, rating dekhe booking.</p></div></div>
-            <div className="flex gap-3 bg-white border rounded-2xl p-4"><span className="text-2xl">✓</span><div><p className="font-bold">Original Parts + Warranty</p><p className="text-sm text-slate-500">30 din service warranty, 90 din parts warranty.</p></div></div>
-            <div className="flex gap-3 bg-white border rounded-2xl p-4"><span className="text-2xl">✓</span><div><p className="font-bold">Transparent Price</p><p className="text-sm text-slate-500">Age price dekhe tarpor booking. Hidden charge nai.</p></div></div>
+            <div className="flex gap-3 bg-white border rounded-2xl p-4"><span className="text-2xl">✓</span><div><p className="font-bold">Verified Technician</p><p className="text-sm text-slate-500">Verified with ID and skill test. Book after checking ratings.</p></div></div>
+            <div className="flex gap-3 bg-white border rounded-2xl p-4"><span className="text-2xl">✓</span><div><p className="font-bold">Original Parts + Warranty</p><p className="text-sm text-slate-500">30-day service warranty, 90-day parts warranty.</p></div></div>
+            <div className="flex gap-3 bg-white border rounded-2xl p-4"><span className="text-2xl">✓</span><div><p className="font-bold">Transparent Price</p><p className="text-sm text-slate-500">See the price before booking. No hidden charge.</p></div></div>
+            <div className="flex gap-3 bg-white border rounded-2xl p-4"><span className="text-2xl">✓</span><div><p className="font-bold">Pay After Service</p><p className="text-sm text-slate-500">Pay only after the work is done, by secure card payment.</p></div></div>
           </div>
         </div>
         <div>
-          <h2 className="text-3xl font-extrabold">Customer Ra Ki Bole?</h2>
+          <p className="text-blue-600 font-bold text-sm">TESTIMONIALS</p>
+          <h2 className="text-3xl font-extrabold mt-1">What Customers Say</h2>
           <div className="mt-6 flex flex-col gap-4">
-            <div className="bg-white border rounded-2xl p-5"><p className="text-sm">⭐⭐⭐⭐⭐</p><p className="mt-2 text-slate-700 text-sm leading-relaxed">Laptop er screen venge gesilo, 1 ghontay basay ese thik kore dise. Price o age theke jana chilo.</p><p className="font-bold text-sm mt-3">- Rahim, Mirpur</p></div>
-            <div className="bg-white border rounded-2xl p-5"><p className="text-sm">⭐⭐⭐⭐⭐</p><p className="mt-2 text-slate-700 text-sm leading-relaxed">Mobile er battery change korlam, original battery dise. Onk valo service.</p><p className="font-bold text-sm mt-3">- Nusrat, Uttara</p></div>
+            <div className="bg-white border rounded-2xl p-5"><p className="text-sm">⭐⭐⭐⭐⭐</p><p className="mt-2 text-slate-700 text-sm leading-relaxed">My laptop screen was broken, they fixed it at my home within 1 hour. Price was known in advance.</p><p className="font-bold text-sm mt-3">- Rahim, Mirpur</p></div>
+            <div className="bg-white border rounded-2xl p-5"><p className="text-sm">⭐⭐⭐⭐⭐</p><p className="mt-2 text-slate-700 text-sm leading-relaxed">Changed my mobile battery, they used an original battery. Very good service.</p><p className="font-bold text-sm mt-3">- Nusrat, Uttara</p></div>
           </div>
         </div>
       </section>
@@ -176,9 +200,9 @@ export default function HomePage() {
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="bg-gradient-to-r from-blue-600 to-violet-600 rounded-3xl p-8 md:p-12 text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-extrabold">Ajkei Booking Koro - 20 Percent Off!</h2>
-          <p className="text-blue-100 mt-3">Prothom booking e discount. Technician 30 min er moddhe call dibe.</p>
-          <Link href="/services" className="inline-block mt-6 bg-white text-blue-700 px-8 py-3 rounded-full font-bold">Ekhoni Booking Koro →</Link>
+          <h2 className="text-3xl md:text-4xl font-extrabold">Book Today - 20 Percent Off!</h2>
+          <p className="text-blue-100 mt-3">Discount on your first booking. A technician will call you within 30 minutes.</p>
+          <Link href="/services" className="inline-block mt-6 bg-white text-blue-700 px-8 py-3 rounded-full font-bold">Book Now →</Link>
         </div>
       </section>
     </div>
