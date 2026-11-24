@@ -25,7 +25,7 @@ export default function SignUpPage() {
       return;
     }
     setLoading(true);
-    const { error } = await authClient.signUp.email({
+    const { error } = await (authClient.signUp.email as any)({
       name, email, password, role, phone,
       callbackURL: "/",
     });
