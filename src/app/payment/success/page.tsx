@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const params = useSearchParams();
   const [done, setDone] = useState(false);
   useEffect(() => {
@@ -18,5 +18,13 @@ export default function PaymentSuccessPage() {
       <p className="text-gray-600 mt-3">Tomar payment hoye gese. {done ? "Booking update hoye gese." : "Updating..."}</p>
       <Link href="/dashboard/customer" className="inline-block mt-6 bg-blue-600 text-white px-6 py-2.5 rounded-lg">Dashboard e Jao</Link>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<p className="text-center py-20">Loading...</p>}>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
