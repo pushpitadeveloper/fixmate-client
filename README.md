@@ -1,45 +1,43 @@
-# FixMate - Client
+# FixMate - Home Repair & Maintenance Service
 
-FixMate is a home service booking platform. Customer service dekhte parbe, booking korte parbe, payment korte parbe. Technician kaj dekhte parbe, status update korte parbe. Admin service banate parbe, sob booking dekhte parbe.
+FixMate is a premium home service booking platform. Customer can browse services, book a technician, pay by card, and track booking. Technician can accept and complete jobs. Admin can manage users, services and bookings.
+
+Live Website: https://fixmate-client-virid.vercel.app
+Live Server: https://fixmate-server-4w1b.onrender.com
+Client Repo: https://github.com/pushpitadeveloper/fixmate-client
+Server Repo: https://github.com/pushpitadeveloper/fixmate-server
+
+## Test Accounts
+
+> Tomar real test account alada hole ei 3 ta line change kore dao, tarpor commit dio.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | admin@fixmate.com | Admin123! |
+| Technician | technician@fixmate.com | Tech123! |
+| Customer | customer@fixmate.com | Customer123! |
+
+Customer chaile Sign Up / Google Login diye notun account baniyeo test korte parbe.
 
 ## Features
-- Home page, Services page, Service details
-- Signup / Signin with BetterAuth
-- Customer Dashboard - Amar bookings, Pay Now with Stripe
-- Technician Dashboard - Assigned kaj, status update
-- Admin Dashboard - Service create, sob booking dekha
-- Stripe Payment - Test card diye payment
-- Responsive - Mobile, Tablet, Desktop
+- Home page with categories, how it works, why choose us
+- Services page with search, filter, sort - 34 services in 7 categories
+- Service details with slug URL - /services/laptop-battery-replacement
+- Booking with date (past date blocked), time slot, problem description
+- Secure card payment with Stripe - Cardholder Name, Card Number, Expiry, CVC
+- Customer Dashboard - My Bookings, Cancel, Pay Now, Payment History, Profile
+- Technician Dashboard - Add Service, Accept / Reject, Start, Completed
+- Admin Dashboard - Manage Users, Approve Services, View Bookings & Revenue
+- Profile with photo upload, name, email, phone, address
+- About, Loading, Not Found, Error pages - Full English, Responsive
 
-## Tech
-- Next.js 14.2.5 + TypeScript
-- Tailwind CSS
-- BetterAuth
-- Stripe Checkout
+## Tech Stack
+- Next.js 14, React, TypeScript, Tailwind CSS
+- Better Auth - Google + Email login
+- MongoDB + Express - Backend API
+- Stripe - Card payment
 
 ## Run Locally
 ```bash
 npm install
 npm run dev
-```
-Open http://localhost:3000
-
-## Env - .env.local
-```
-NEXT_PUBLIC_API_URL=http://localhost:5000
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-## Test Accounts
-- Customer: customer@test.com / 123456
-- Technician: technician@test.com / 123456
-- Admin: admin@test.com / 123456
-
-## Test Card
-- Card: 4242 4242 4242 4242
-- Date: Future date
-- CVC: 123
-
-## Live Links
-- Client:
-- Server:
