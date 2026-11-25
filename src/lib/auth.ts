@@ -25,15 +25,25 @@ export const auth = betterAuth({
     accountLinking: {
       enabled: true,
       trustedProviders: ["google"],
+      allowDifferentEmails: false,
     },
   },
   emailAndPassword: {
     enabled: true,
+    // FIX: Verification chara password account keo Google er sathe link korte dibe
+    requireEmailVerification: false,
+  },
+  emailVerification: {
+    sendOnSignUp: false,
+    autoSignInAfterVerification: true,
   },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // FIX: Vul Gmail select hole abar choose korte dibe
+      prompt: "select_account",
+      accessType: "offline",
     },
   },
   plugins: [jwt()],

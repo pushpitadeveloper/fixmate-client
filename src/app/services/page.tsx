@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 
 type Service = {
   _id: string;
+  slug?: string;
   title: string;
   category: string;
   description: string;
@@ -19,6 +20,11 @@ type Service = {
   serviceArea?: string;
   status?: string;
 };
+
+// FIX: Title theke real slug banano - demo2 / demo3 ar URL e jabe na
+function toSlug(title: string) {
+  return String(title || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
 
 const demoServices: Service[] = [
   { _id: "demo1", title: "Laptop Screen Replacement", category: "Laptop & PC", description: "Cracked or flickering laptop screen replaced with original display.", price: 2500, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=800&q=80", serviceMode: "Home Visit", status: "Approved" },
@@ -122,6 +128,7 @@ function ServicesContent() {
             const tech = rawTech.toLowerCase().includes("test") ? "Verified Technician" : rawTech;
             return {
               _id: s._id || "api" + i,
+              slug: toSlug(s.title || s.name || "Repair Service"),
               title: s.title || s.name || "Repair Service",
               category: s.category || "Laptop & PC",
               description: s.description || "Professional repair service.",
@@ -137,17 +144,16 @@ function ServicesContent() {
               status: s.status || "Approved",
             };
           });
-          // FIX - MERGE: Real + Demo eksathe, na hole 1 ta real asle demo lukay jay
           const merged = [
             ...fixed,
-            ...demoServices.filter((demo) => !fixed.some((f) => f.title.toLowerCase() === demo.title.toLowerCase())),
+            ...demoServices.filter((demo) => !fixed.some((f) => f.title.toLowerCase() === demo.title.toLowerCase())).map((d) => ({ ...d, slug: toSlug(d.title) })),
           ];
           setServices(applyFilters(merged, search, cat, mode, sort));
         } else {
-          setServices(applyFilters(demoServices, search, cat, mode, sort));
+          setServices(applyFilters(demoServices.map((d) => ({ ...d, slug: toSlug(d.title) })), search, cat, mode, sort));
         }
       } catch {
-        setServices(applyFilters(demoServices, search, cat, mode, sort));
+        setServices(applyFilters(demoServices.map((d) => ({ ...d, slug: toSlug(d.title) })), search, cat, mode, sort));
       } finally {
         setLoading(false);
       }
@@ -228,8 +234,9 @@ function ServicesContent() {
               const price = s.basePrice ?? s.price ?? 1000;
               const tech = s.technicianName || s.technician || "Verified Technician";
               const dur = s.estimatedDuration || s.duration || "2 hours";
+              const slug = s.slug || toSlug(s.title);
               return (
-                <div key={s._id} className="bg-white rounded-3xl overflow-hidden border hover:-translate-y-1 hover:shadow-xl transition flex flex-col">
+                <div key={slug} className="bg-white rounded-3xl overflow-hidden border hover:-translate-y-1 hover:shadow-xl transition flex flex-col">
                   <div className="relative h-48 overflow-hidden bg-slate-100">
                     <img src={s.image} alt={s.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80"; }} />
                     <span className="absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">{s.category}</span>
@@ -248,8 +255,8 @@ function ServicesContent() {
                     <div className="flex items-center justify-between mt-5 pt-4 border-t mt-auto">
                       <div><p className="text-xs text-slate-400">Price</p><p className="font-extrabold text-xl">{price} Tk</p></div>
                       <div className="flex gap-2">
-                        <Link href={"/services/" + s._id} className="px-4 py-2 rounded-full border font-bold text-sm">Details</Link>
-                        <Link href={"/services/" + s._id} className="px-4 py-2 rounded-full bg-blue-600 text-white font-bold text-sm">Book Now</Link>
+                        <Link href={"/services/" + slug} className="px-4 py-2 rounded-full border font-bold text-sm">Details</Link>
+                        <Link href={"/services/" + slug} className="px-4 py-2 rounded-full bg-blue-600 text-white font-bold text-sm">Book Now</Link>
                       </div>
                     </div>
                   </div>

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 type Service = {
   _id: string;
+  slug?: string;
   title: string;
   category: string;
   description: string;
@@ -19,6 +20,10 @@ type Service = {
   serviceMode?: string;
   serviceArea?: string;
 };
+
+function toSlug(title: string) {
+  return String(title || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
 
 const demoServices: Service[] = [
   { _id: "demo1", title: "Laptop Screen Replacement", category: "Laptop & PC", description: "Cracked or flickering laptop screen replaced with original display. Full testing before delivery.", price: 2500, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1000&q=80" },
@@ -41,6 +46,20 @@ const demoServices: Service[] = [
   { _id: "demo18", title: "Tablet Battery Replacement", category: "Smartphone", description: "Tablet battery replaced with original.", price: 1600, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?auto=format&fit=crop&w=1000&q=80" },
   { _id: "demo19", title: "Printer Repair", category: "Laptop & PC", description: "Paper jam, blurry print. Full service.", price: 900, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=1000&q=80" },
   { _id: "demo20", title: "WiFi Router Setup", category: "Electrical", description: "Router setup, slow WiFi fix.", price: 1200, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1606904825846-647eb07f5be2?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo21", title: "AC Gas Refill", category: "AC", description: "AC not cooling. Gas check, refill and full cooling test.", price: 2500, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1631545806609-24040d63f93a?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo22", title: "AC Installation", category: "AC", description: "New AC installation with copper pipe, bracket and testing.", price: 3500, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo23", title: "AC Cooling Problem Repair", category: "AC", description: "AC runs but not cooling. Sensor, fan and gas checked.", price: 1800, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo24", title: "Refrigerator Cooling Problem", category: "Refrigerator", description: "Fridge not cooling. Thermostat, fan and gas checked.", price: 2000, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo25", title: "Refrigerator Compressor Repair", category: "Refrigerator", description: "Compressor sound problem or not starting. Repair or replace.", price: 3500, duration: "3 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo26", title: "Refrigerator Gas Refill", category: "Refrigerator", description: "Fridge gas refill with leak test.", price: 2200, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo27", title: "TV Display Repair", category: "TV", description: "TV display line, black screen or flicker problem repair.", price: 2800, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo28", title: "TV Sound Problem Repair", category: "TV", description: "No sound or low sound. Speaker and board checked.", price: 1200, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1595246140625-573b715d11dc?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo29", title: "TV Backlight Repair", category: "TV", description: "TV sound comes but no picture. Backlight replaced.", price: 3000, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo30", title: "Washing Machine Drum Repair", category: "Washing Machine", description: "Drum noise, vibration or not spinning. Drum and bearing checked.", price: 2000, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo31", title: "Washing Machine Drainage Problem", category: "Washing Machine", description: "Water not draining. Pump and pipe cleaned or replaced.", price: 1200, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo32", title: "Washing Machine Motor Repair", category: "Washing Machine", description: "Machine not starting or motor sound problem. Motor checked.", price: 2500, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo33", title: "Ceiling Fan Repair", category: "Electrical", description: "Fan slow, sound or not working. Capacitor and winding checked.", price: 800, duration: "1 hour", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1000&q=80" },
+  { _id: "demo34", title: "House Wiring & Switch Repair", category: "Electrical", description: "Switch, socket, wiring and short circuit repair.", price: 1500, duration: "2 hours", technician: "Verified Technician", image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1000&q=80" },
 ];
 
 function getLocalDateStr(d: Date) {
@@ -89,21 +108,53 @@ export default function ServiceDetailsPage() {
   }
 
   useEffect(() => {
-    const found = demoServices.find((s) => s._id === id);
-    if (found) {
-      setService(found);
-      setLoading(false);
-      return;
-    }
-    fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services/" + id)
-      .then((r) => r.json())
-      .then((d) => {
+    async function load() {
+      setLoading(true);
+      // FIX: Slug diye khujo + purano demo2 diyeo khujo, 2 tai kaj korbe
+      const found = demoServices.find((s) => toSlug(s.title) === id || s._id === id);
+      if (found) {
+        setService({ ...found, _id: toSlug(found.title), slug: toSlug(found.title) });
+        setLoading(false);
+        return;
+      }
+      try {
+        // Real service - slug diye list theke khujo
+        const listRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services");
+        const listData = await listRes.json();
+        const list = Array.isArray(listData) ? listData : listData.data || [];
+        const match = list.find((s: any) => toSlug(s.title || s.name || "") === id || String(s._id) === id || s.slug === id);
+        if (match) {
+          const p = match.basePrice ?? match.price ?? 1000;
+          const demo = demoServices.find((x) => x.title.toLowerCase() === (match.title || "").toLowerCase());
+          setService({
+            _id: match._id || id,
+            slug: toSlug(match.title || ""),
+            title: match.title,
+            category: match.category || "Laptop & PC",
+            description: match.description || "Professional repair service.",
+            price: p,
+            basePrice: p,
+            duration: match.estimatedDuration || match.duration || "2 hours",
+            estimatedDuration: match.estimatedDuration || match.duration || "2 hours",
+            technician: match.technicianName || match.technician || "Verified Technician",
+            technicianName: match.technicianName || match.technician || "Verified Technician",
+            image: match.image || match.imageUrl || demo?.image || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1000&q=80",
+            serviceMode: match.serviceMode || "Home Visit",
+            serviceArea: match.serviceArea || "Dhaka",
+          });
+          setLoading(false);
+          return;
+        }
+        // Mongo ID hole direct fetch
+        const r = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services/" + id);
+        const d = await r.json();
         const s = d.data || d.service || d;
         if (s && s.title) {
           const demo = demoServices.find((x) => x.title.toLowerCase() === (s.title || "").toLowerCase());
           const p = s.basePrice ?? s.price ?? 1000;
           setService({
             _id: s._id || id,
+            slug: toSlug(s.title),
             title: s.title,
             category: s.category || "Laptop & PC",
             description: s.description || "Professional repair service.",
@@ -118,11 +169,15 @@ export default function ServiceDetailsPage() {
             serviceArea: s.serviceArea || "Dhaka",
           });
         } else {
-          setService(demoServices[0]);
+          setService(null);
         }
-      })
-      .catch(() => setService(demoServices[0]))
-      .finally(() => setLoading(false));
+      } catch {
+        setService(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, [id]);
 
   useEffect(() => {
@@ -135,7 +190,6 @@ export default function ServiceDetailsPage() {
     if (saved.address) setAddress(saved.address);
   }, [user]);
 
-  // Duplicate active request check
   useEffect(() => {
     if (!user || !service) return;
     async function checkDuplicate() {
@@ -349,8 +403,8 @@ export default function ServiceDetailsPage() {
       <div className="mt-10">
         <h2 className="font-extrabold text-2xl">Related Services</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-          {demoServices.filter((s) => s.category === service.category && s._id !== service._id).slice(0, 4).map((s) => (
-            <Link key={s._id} href={"/services/" + s._id} className="bg-white border rounded-3xl overflow-hidden hover:shadow-lg transition">
+          {demoServices.filter((s) => s.category === service.category && toSlug(s.title) !== toSlug(service.title)).slice(0, 4).map((s) => (
+            <Link key={toSlug(s.title)} href={"/services/" + toSlug(s.title)} className="bg-white border rounded-3xl overflow-hidden hover:shadow-lg transition">
               <img src={s.image} alt={s.title} className="w-full h-40 object-cover" />
               <div className="p-4"><p className="font-bold text-sm">{s.title}</p><p className="font-extrabold text-blue-600 mt-1">{s.basePrice ?? s.price} Tk</p></div>
             </Link>
