@@ -203,14 +203,14 @@ export default function ServiceDetailsPage() {
         const active = ["Pending", "Requested", "Accepted", "In Progress", "In-Progress", "Confirmed"];
         const found = list.some((b: any) => {
           const sid = b.serviceId?._id || b.serviceId || b.service?._id || b.service;
-          const sameService = String(sid) === String(service._id) || b.serviceTitle === service.title || b.title === service.title;
+          const sameService = String(sid) === String(service?._id) || b.serviceTitle === service?.title || b.title === service?.title;
           const sameUser = !b.email || b.email === user.email || b.userEmail === user.email;
           return sameService && sameUser && active.includes(b.status);
         });
         if (found) setHasActiveBooking(true);
       } catch {
         const old = JSON.parse(localStorage.getItem("fixmate-bookings") || "[]");
-        const found = old.some((b: any) => (b.serviceId === service._id || b.serviceTitle === service.title) && ["Pending", "Requested", "Accepted", "In Progress"].includes(b.status));
+        const found = old.some((b: any) => (b.serviceId === service?._id || b.serviceTitle === service?.title) && ["Pending", "Requested", "Accepted", "In Progress"].includes(b.status));
         if (found) setHasActiveBooking(true);
       }
     }
