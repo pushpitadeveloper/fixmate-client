@@ -110,7 +110,6 @@ export default function ServiceDetailsPage() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      // FIX: Slug diye khujo + purano demo2 diyeo khujo, 2 tai kaj korbe
       const found = demoServices.find((s) => toSlug(s.title) === id || s._id === id);
       if (found) {
         setService({ ...found, _id: toSlug(found.title), slug: toSlug(found.title) });
@@ -118,7 +117,6 @@ export default function ServiceDetailsPage() {
         return;
       }
       try {
-        // Real service - slug diye list theke khujo
         const listRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services");
         const listData = await listRes.json();
         const list = Array.isArray(listData) ? listData : listData.data || [];
@@ -145,7 +143,6 @@ export default function ServiceDetailsPage() {
           setLoading(false);
           return;
         }
-        // Mongo ID hole direct fetch
         const r = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services/" + id);
         const d = await r.json();
         const s = d.data || d.service || d;
@@ -180,14 +177,20 @@ export default function ServiceDetailsPage() {
     load();
   }, [id]);
 
+  // FIX - Profile theke auto-fill, kintu user chaile change korte parbe
   useEffect(() => {
-    if (user) {
-      setName(user.name || "");
-      setEmail(user.email || "");
+    try {
+      const saved = JSON.parse(localStorage.getItem("fixmate-profile") || "{}");
+      setName((prev) => prev || saved.name || saved.fullName || user?.name || "");
+      setEmail((prev) => prev || saved.email || user?.email || "");
+      setPhone((prev) => prev || saved.phone || saved.phoneNumber || user?.phone || user?.phoneNumber || "");
+      setAddress((prev) => prev || saved.address || saved.fullAddress || user?.address || "");
+    } catch {
+      if (user) {
+        setName((prev) => prev || user.name || "");
+        setEmail((prev) => prev || user.email || "");
+      }
     }
-    const saved = JSON.parse(localStorage.getItem("fixmate-profile") || "{}");
-    if (saved.phone) setPhone(saved.phone);
-    if (saved.address) setAddress(saved.address);
   }, [user]);
 
   useEffect(() => {
@@ -230,12 +233,14 @@ export default function ServiceDetailsPage() {
       setErrMsg("You already have an active request for this service. Please check your dashboard.");
       return;
     }
-    if (!phone || !address || !date) {
-      setErrMsg("Please fill phone, address and date.");
+    if (!name.trim() || !email.trim() || !phone.trim() || !address.trim() || !date) {
+      setErrMsg("Please fill name, email, phone, address and date.");
       return;
     }
-    if (!problem || problem.trim().length < 20) {
-      setErrMsg("Please describe your problem in at least 20 characters.");
+    // FIX - Kono limit nai, je kono text dilei booking confirm hobe
+    // Sudhu ekdom khali rakhle atke dibe
+    if (!problem || !problem.trim()) {
+      setErrMsg("Please describe your problem in a few words.");
       return;
     }
     if (date < today) {
@@ -249,11 +254,11 @@ export default function ServiceDetailsPage() {
       title: service?.title,
       price: price,
       basePrice: price,
-      name,
-      email: user.email,
-      userEmail: user.email,
-      phone,
-      address,
+      name: name.trim(),
+      email: email.trim(),
+      userEmail: email.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
       date,
       scheduledDate: date,
       timeSlot,
@@ -347,11 +352,11 @@ export default function ServiceDetailsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
               <div>
                 <label className="text-xs font-bold text-slate-500">YOUR NAME</label>
-                <input value={name} readOnly placeholder="Your Name" className="border rounded-xl px-4 py-3 text-sm outline-none w-full mt-1 bg-slate-50 font-semibold text-slate-700" />
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your Name" required disabled={isNonCustomer || hasActiveBooking} className="border rounded-xl px-4 py-3 text-sm outline-none w-full mt-1 focus:border-blue-600 bg-white font-semibold disabled:bg-slate-50" />
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-500">EMAIL</label>
-                <input value={email} readOnly placeholder="Your Email" className="border rounded-xl px-4 py-3 text-sm outline-none w-full mt-1 bg-slate-50 font-semibold text-slate-700" />
+                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Your Email" required disabled={isNonCustomer || hasActiveBooking} className="border rounded-xl px-4 py-3 text-sm outline-none w-full mt-1 focus:border-blue-600 bg-white font-semibold disabled:bg-slate-50" />
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-500">PHONE NUMBER</label>
@@ -363,8 +368,9 @@ export default function ServiceDetailsPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-bold text-slate-500">DESCRIBE YOUR PROBLEM <span className="text-red-500">*</span> <span className="text-slate-400 font-medium">Min 20 characters - {problem.length}/20</span></label>
+                <label className="text-xs font-bold text-slate-500">DESCRIBE YOUR PROBLEM <span className="text-red-500">*</span></label>
                 <textarea value={problem} onChange={(e) => setProblem(e.target.value)} placeholder="Example: My laptop screen is cracked on the right side and flickering when I open it..." rows={3} required disabled={isNonCustomer || hasActiveBooking} className="border rounded-xl px-4 py-3 text-sm outline-none w-full mt-1 focus:border-blue-600 bg-white font-medium resize-none disabled:bg-slate-50" />
+                <p className="text-xs text-slate-400 mt-1">Please write in a few words - what happened, when it started, any sound or error.</p>
               </div>
 
               <div className="md:col-span-2">

@@ -1,4 +1,5 @@
 "use client";
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -23,6 +24,17 @@ export default function Footer() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
 
+  // FIX - Login thakle Sign In dekhabe na, My Dashboard dekhabe
+  const { data: session } = authClient.useSession();
+  const user: any = (session as any)?.user;
+
+  const dashboardHref =
+    user?.role === "admin"
+      ? "/dashboard/admin"
+      : user?.role === "technician"
+        ? "/dashboard/technician"
+        : "/dashboard/customer";
+
   return (
     <footer className="bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,7 +46,11 @@ export default function Footer() {
           </div>
           <div className="relative mt-6 md:mt-0 flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
             <Link href="/services" className="px-7 py-3 rounded-full bg-white text-slate-900 font-bold text-sm text-center hover:scale-105 transition">Book Repair Now</Link>
-            <Link href="/sign-in" className="px-7 py-3 rounded-full border border-white border-opacity-30 text-white font-bold text-sm text-center hover:bg-white hover:bg-opacity-10 transition">Sign In</Link>
+            {user ? (
+              <Link href={dashboardHref} className="px-7 py-3 rounded-full border border-white border-opacity-30 text-white font-bold text-sm text-center hover:bg-white hover:bg-opacity-10 transition">My Dashboard</Link>
+            ) : (
+              <Link href="/sign-in" className="px-7 py-3 rounded-full border border-white border-opacity-30 text-white font-bold text-sm text-center hover:bg-white hover:bg-opacity-10 transition">Sign In</Link>
+            )}
           </div>
         </div>
       </div>

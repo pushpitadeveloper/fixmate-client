@@ -22,16 +22,12 @@ function PaymentContent() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
-  const [card, setCard] = useState("4242 4242 4242 4242");
-  const [expiry, setExpiry] = useState("12/28");
-  const [cvc, setCvc] = useState("123");
+  // FIX - Sob field faka thakbe, user nije dibe
+  const [card, setCard] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvc, setCvc] = useState("");
   const [name, setName] = useState("");
   const [msg, setMsg] = useState("");
-
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("fixmate-profile") || "{}");
-    if (saved.name) setName(saved.name);
-  }, []);
 
   useEffect(() => {
     async function load() {
@@ -63,10 +59,28 @@ function PaymentContent() {
     return clean.replace(/(\d{4})(?=\d)/g, "$1 ");
   }
 
+  function formatExpiry(v: string) {
+    let digits = v.replace(/\D/g, "").slice(0, 4);
+    if (digits.length > 2) digits = digits.slice(0, 2) + "/" + digits.slice(2);
+    return digits;
+  }
+
   async function handlePay(e: React.FormEvent) {
     e.preventDefault();
-    if (!card || !expiry || !cvc || !name) {
-      setMsg("Please fill all card details.");
+    if (!name.trim()) {
+      setMsg("Please enter cardholder name.");
+      return;
+    }
+    if (card.replace(/\D/g, "").length !== 16) {
+      setMsg("Please enter a valid 16-digit card number.");
+      return;
+    }
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) {
+      setMsg("Please enter expiry as MM/YY.");
+      return;
+    }
+    if (cvc.length < 3) {
+      setMsg("Please enter a valid CVC.");
       return;
     }
     setPaying(true);
@@ -159,11 +173,11 @@ function PaymentContent() {
                 <p className="font-extrabold text-lg tracking-wide">FixMate</p>
                 <span className="text-xs bg-white/20 px-3 py-1 rounded-full font-bold">CARD</span>
               </div>
-              <p className="font-mono text-xl md:text-2xl tracking-wider mt-6">{card || "4242 4242 4242 4242"}</p>
+              <p className="font-mono text-xl md:text-2xl tracking-wider mt-6">{card || "•••• •••• •••• ••••"}</p>
               <div className="flex justify-between mt-5 text-xs">
-                <div><p className="text-white/60">CARD HOLDER</p><p className="font-bold mt-1">{name || "YOUR NAME"}</p></div>
+                <div><p className="text-white/60">CARD HOLDER</p><p className="font-bold mt-1 uppercase">{name || "YOUR NAME"}</p></div>
                 <div><p className="text-white/60">EXPIRES</p><p className="font-bold mt-1">{expiry || "MM/YY"}</p></div>
-                <div><p className="text-white/60">CVC</p><p className="font-bold mt-1">•••</p></div>
+                <div><p className="text-white/60">CVC</p><p className="font-bold mt-1">{cvc ? "•".repeat(cvc.length) : "•••"}</p></div>
               </div>
             </div>
 
@@ -174,8 +188,8 @@ function PaymentContent() {
               <label className="block text-xs font-bold text-slate-500 mt-4">CARD NUMBER</label>
               <input value={card} onChange={(e) => setCard(formatCard(e.target.value))} placeholder="4242 4242 4242 4242" autoComplete="off" name="fixmate-card" inputMode="numeric" className="w-full border rounded-xl px-4 py-3 mt-1 text-sm outline-none focus:border-blue-600 font-bold" />
               <div className="grid grid-cols-2 gap-3 mt-4">
-                <div><label className="text-xs font-bold text-slate-500">EXPIRY</label><input value={expiry} onChange={(e) => setExpiry(e.target.value)} placeholder="MM/YY" autoComplete="off" name="fixmate-exp" className="w-full border rounded-xl px-4 py-3 mt-1 text-sm outline-none focus:border-blue-600 font-bold" /></div>
-                <div><label className="text-xs font-bold text-slate-500">CVC</label><input value={cvc} onChange={(e) => setCvc(e.target.value)} placeholder="123" maxLength={3} autoComplete="off" name="fixmate-cvc" inputMode="numeric" className="w-full border rounded-xl px-4 py-3 mt-1 text-sm outline-none focus:border-blue-600 font-bold" /></div>
+                <div><label className="text-xs font-bold text-slate-500">EXPIRY</label><input value={expiry} onChange={(e) => setExpiry(formatExpiry(e.target.value))} placeholder="MM/YY" autoComplete="off" name="fixmate-exp" inputMode="numeric" className="w-full border rounded-xl px-4 py-3 mt-1 text-sm outline-none focus:border-blue-600 font-bold" /></div>
+                <div><label className="text-xs font-bold text-slate-500">CVC</label><input value={cvc} onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="123" maxLength={4} autoComplete="off" name="fixmate-cvc" inputMode="numeric" className="w-full border rounded-xl px-4 py-3 mt-1 text-sm outline-none focus:border-blue-600 font-bold" /></div>
               </div>
               <button disabled={paying} className="w-full mt-5 py-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm disabled:opacity-50 shadow-lg shadow-blue-200">{paying ? "Processing Secure Payment..." : "Pay " + total + " Tk Securely"}</button>
               <div className="flex items-center justify-center gap-4 mt-4 text-xs text-slate-400 font-bold">
