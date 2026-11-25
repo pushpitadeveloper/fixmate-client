@@ -200,7 +200,7 @@ export default function AdminDashboard() {
   const inputClass = "w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500";
 
   const pendingBookings = bookings.filter((b) => (b.status || "").toLowerCase().includes("pend") || (b.status || "").toLowerCase().includes("request")).length;
-  const pendingServices = services.filter((s) => (s.status || "").toLowerCase().includes("pend")).length;
+  const pendingServices = services.filter((s) => (s.status || "Pending").toLowerCase().includes("pend")).length;
   const paidPayments = payments.length > 0 ? payments : bookings.filter((b) => (b.paymentStatus || "").toLowerCase() === "paid").map((b) => ({
     _id: b._id, serviceTitle: b.serviceTitle || b.title || "Repair Service",
     amount: b.finalAmount ?? b.price ?? 0, transactionId: "TXN-" + String(b._id).slice(-8).toUpperCase(), status: "Paid", createdAt: "",
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
           </div>
           <div className="border rounded-xl p-5 bg-white">
             <h2 className="font-bold mb-3">All Services - Approve / Reject</h2>
-            <div className="flex flex-col gap-3 max-h- overflow-y-auto">
+            <div className="flex flex-col gap-3 max-h- overflow-y-auto pr-1">
               {services.map((s) => (
                 <div key={s._id} className="border rounded-lg p-3 text-sm">
                   <div className="flex items-start justify-between gap-2">
@@ -288,14 +288,14 @@ export default function AdminDashboard() {
                   <p className="text-gray-500 mt-1">{s.category} | {s.basePrice ?? s.price} Tk | {s.technicianName || "FixMate Team"}</p>
                   <p className="text-gray-500 line-clamp-2">{s.description}</p>
                   <div className="flex gap-2 mt-3">
-                    {(s.status || "").toLowerCase().includes("pend") && (
+                    {(s.status || "Pending").toLowerCase().includes("pend") && (
                       <>
-                        <button onClick={() => updateServiceStatus(s, "Approved")} className="px-4 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold">Approve</button>
-                        <button onClick={() => updateServiceStatus(s, "Rejected")} className="px-4 py-1.5 rounded-full border border-red-200 text-red-600 text-xs font-bold">Reject</button>
+                        <button onClick={() => updateServiceStatus(s, "Approved")} className="px-4 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold cursor-pointer hover:bg-emerald-700">Approve</button>
+                        <button onClick={() => updateServiceStatus(s, "Rejected")} className="px-4 py-1.5 rounded-full border border-red-200 text-red-600 text-xs font-bold cursor-pointer">Reject</button>
                       </>
                     )}
-                    {(s.status || "").toLowerCase().includes("reject") && <button onClick={() => updateServiceStatus(s, "Approved")} className="px-4 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold">Approve Again</button>}
-                    {(s.status || "").toLowerCase().includes("approv") && <button onClick={() => updateServiceStatus(s, "Rejected")} className="px-4 py-1.5 rounded-full border border-red-200 text-red-600 text-xs font-bold">Reject</button>}
+                    {(s.status || "Pending").toLowerCase().includes("reject") && <button onClick={() => updateServiceStatus(s, "Approved")} className="px-4 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold cursor-pointer hover:bg-emerald-700">Approve Again</button>}
+                    {(s.status || "Pending").toLowerCase().includes("approv") && <button onClick={() => updateServiceStatus(s, "Rejected")} className="px-4 py-1.5 rounded-full border border-red-200 text-red-600 text-xs font-bold cursor-pointer">Reject</button>}
                   </div>
                 </div>
               ))}
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
         <div className="border rounded-xl p-5 bg-white mt-6">
           <h2 className="font-bold mb-1">All Bookings - Read Only</h2>
           <p className="text-sm text-slate-500 mb-3">Admin cannot change booking status. Technician and customer manage bookings.</p>
-          <div className="flex flex-col gap-3 max-h- overflow-y-auto">
+          <div className="flex flex-col gap-3 max-h- overflow-y-auto pr-1">
             {bookings.map((b) => (
               <div key={b._id} className="border rounded-lg p-3 text-sm flex flex-wrap justify-between gap-2">
                 <div>
