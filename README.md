@@ -4,6 +4,8 @@ Live repair service booking platform. Customers can browse services, book a repa
 
 **Live Client:** https://fixmate-client-virid.vercel.app
 **Live Server:** https://fixmate-server-4w1b.onrender.com
+**Client Repo:** https://github.com/pushpitadeveloper/fixmate-client
+**Server Repo:** https://github.com/pushpitadeveloper/fixmate-server
 
 ## Features
 
@@ -46,7 +48,7 @@ Use these accounts to test the live site. Do not change their passwords.
 ## Run Locally
 
 ```bash
-git clone <client-repo-url>
+git clone https://github.com/pushpitadeveloper/fixmate-client
 cd fixmate-client
 npm install
 ```
