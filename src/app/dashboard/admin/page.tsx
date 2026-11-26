@@ -35,10 +35,10 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [bRes, sRes, uRes, pRes] = await Promise.allSettled([
-        fetch(`/api/proxy/bookings`, { credentials: "include" }),
-        fetch(`/api/proxy/services`, { credentials: "include" }),
-        fetch(`/api/proxy/users`, { credentials: "include" }),
-        fetch(`/api/proxy/payments`, { credentials: "include" }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, { credentials: "include" }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services`, { credentials: "include" }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, { credentials: "include" }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments`, { credentials: "include" }),
       ]);
       if (bRes.status === "fulfilled" && bRes.value.ok) {
         const d = await bRes.value.json();
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
     if (description.trim().length < 20) { toast.error("Description must be at least 20 characters"); return; }
     setCreating(true);
     try {
-      const res = await fetch(`/api/proxy/services`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
 
   async function updateUserRole(u: User, newRole: string) {
     try {
-      const res = await fetch(`/api/proxy/users/${u._id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${u._id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ role: newRole }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
 
   async function updateServiceStatus(s: Service, status: string) {
     try {
-      const res = await fetch(`/api/proxy/services/${s._id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services/${s._id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
           </div>
           <div className="border rounded-xl p-5 bg-white">
             <h2 className="font-bold mb-3">All Services - Approve / Reject</h2>
-            <div className="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-1">
+            <div className="flex flex-col gap-3 max-h- overflow-y-auto pr-1">
               {services.map((s) => (
                 <div key={s._id} className="border rounded-lg p-3 text-sm">
                   <div className="flex items-start justify-between gap-2">
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
         <div className="border rounded-xl p-5 bg-white mt-6">
           <h2 className="font-bold mb-1">All Bookings - Read Only</h2>
           <p className="text-sm text-slate-500 mb-3">Admin cannot change booking status. Technician and customer manage bookings.</p>
-          <div className="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-1">
+          <div className="flex flex-col gap-3 max-h- overflow-y-auto pr-1">
             {bookings.map((b) => (
               <div key={b._id} className="border rounded-lg p-3 text-sm flex flex-wrap justify-between gap-2">
                 <div><p className="font-bold">{getBookingTitle(b)} - {b.status || "Pending"}</p><p className="text-gray-500">{b.customerEmail || b.email || b.userEmail || ""} | {b.scheduledDate || b.date || ""} {b.scheduledTime || b.timeSlot || ""} | {b.finalAmount ?? b.price ?? 0} Tk</p><p className="text-gray-500">Payment: {b.paymentStatus || "Unpaid"}</p></div>
