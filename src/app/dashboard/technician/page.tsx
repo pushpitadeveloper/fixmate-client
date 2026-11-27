@@ -148,55 +148,54 @@ export default function TechnicianDashboard() {
     reader.readAsDataURL(file);
   }
 
-  async function handleSaveService(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.title || !form.description || !form.basePrice) {
-      toast.error("Please fill title, description and price");
-      return;
-    }
-    if (form.description.trim().length < 20) {
-      toast.error("Description must be at least 20 characters");
-      return;
-    }
-    setSaving(true);
-    const payload = {
-      ...form,
-      price: form.basePrice,
-      imageUrl: form.image,
-      technicianName: user?.name || "Verified Technician",
-      technicianEmail: user?.email,
-      technician: user?.name || "Verified Technician",
-      status: "Pending",
-    };
-    try {
-      let res: Response;
-      if (editing) {
-        // Edit -> abar Pending e jabe, Admin abar approve korbe
-        res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services/" + editing._id, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ ...payload, status: "Pending" }),
-        });
-      } else {
-        res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        });
-      }
-      if (!res.ok) throw new Error("Failed");
-      toast.success(editing ? "Service updated. Sent again for approval (Pending)." : "Service added. Waiting for admin approval.");
-      setShowForm(false);
-      loadAll();
-    } catch {
-      toast.error("Failed to save service. Please try again.");
-    } finally {
-      setSaving(false);
-    }
+  async function handleSaveService(e: any) {
+  e.preventDefault();
+  if (form.description.trim().length < 20) {
+    toast.error("Description min 20 characters hote hobe");
+    return;
   }
-
+  setSaving(true);
+  const payload = {
+    ...form,
+    price: form.basePrice,
+    imageUrl: form.image,
+    technicianName: user?.name || "Verified Technician",
+    technicianEmail: user?.email,
+    technician: user?.name || "Verified Technician",
+    status: "Pending",
+  };
+  try {
+    const { data: sess }: any = await authClient.getSession();
+    const token = sess?.session?.token || sess?.token || "";
+    const headers: any = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    let res: Response;
+    if (editing) {
+      res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services/" + editing._id, {
+        method: "PATCH",
+        headers,
+        credentials: "include",
+        body: JSON.stringify({ ...payload, status: "Pending" }),
+      });
+    } else {
+      res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/services", {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+    }
+    if (!res.ok) throw new Error("Failed");
+    toast.success(editing ? "Service updated. Sent again for approval (Pending)." : "Service added. Waiting for admin approval.");
+    setShowForm(false);
+    loadAll();
+  } catch {
+    toast.error("Failed to save service. Please try again.");
+  } finally {
+    setSaving(false);
+  }
+}
+      
   async function updateBookingStatus(b: Booking, status: string, extra: any = {}) {
     setActionLoading(true);
     try {
